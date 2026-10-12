@@ -3,7 +3,7 @@
    La cookie es sha256('power-rush:' + clave); acá y en middleware.js solo se
    guarda el sha256 de la cookie. Si cambia la clave, actualizar los dos. */
 const COOKIE = 'pr_acceso';
-const TOKEN_HASH = 'ad72e08697c21c5ddba8d95539f4810f9e92158c1f55b50e25349ef408b48ad6';
+const TOKEN_HASH = '1133fb0e866dcc5f001d96c612b2fc390b0654c934ece0d962b2621eb1a62540';
 const DIAS = 30;
 
 export async function POST(request) {
