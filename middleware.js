@@ -2,12 +2,17 @@
    POWER RUSH — Portada "en construcción" hasta que abra la tienda
    Mientras ABIERTO = false, cualquier página muestra /proximamente (la URL no
    cambia). El equipo entra al sitio completo con la clave desde "Acceso":
-   /api/acceso la valida y deja una cookie por 30 días (ver api/_acceso.mjs).
+   /api/acceso la valida y deja una cookie por 30 días.
    El día que abre la tienda: ABIERTO = true (o borrar este archivo).
-   =========================================================================== */
-import { COOKIE, tokenValido } from './api/_acceso.mjs';
 
+   La clave no está en el código (el repo es público): la cookie es
+   sha256('power-rush:' + clave) y acá solo se guarda el sha256 de la cookie.
+   Para cambiar la clave, regenerar TOKEN_HASH acá y en api/acceso.mjs.
+   Sin imports a propósito: Vercel compila este archivo como CommonJS.
+   =========================================================================== */
 const ABIERTO = false;
+const COOKIE = 'pr_acceso';
+const TOKEN_HASH = 'ad72e08697c21c5ddba8d95539f4810f9e92158c1f55b50e25349ef408b48ad6';
 
 export const config = {
   runtime: 'nodejs',
@@ -17,9 +22,14 @@ export const config = {
 
 export default async function middleware(request) {
   if (ABIERTO) return next();
-  const m = (request.headers.get('cookie') || '').match(new RegExp('(?:^|;\\s*)' + COOKIE + '=([^;]+)'));
-  if (m && (await tokenValido(m[1]))) return next();
+  const m = (request.headers.get('cookie') || '').match(new RegExp('(?:^|;\\s*)' + COOKIE + '=([a-f0-9]{64})'));
+  if (m && (await sha256(m[1])) === TOKEN_HASH) return next();
   return rewrite(new URL('/proximamente', request.url));
+}
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 /* Lo mismo que next() y rewrite() de @vercel/functions, sin sumar dependencias
