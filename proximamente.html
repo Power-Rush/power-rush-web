@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Power Rush — Próximamente</title>
+  <meta name="description" content="La nueva fórmula de Power Rush ya está lista: foco sin crash, sin azúcar, dosis reales. Dejanos tu mail y sos el primero en enterarte cuando abra la tienda.">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,900&family=Bricolage+Grotesque:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Misma página que la de contraseña de Shopify (checkout.powerrush.com.ar/password).
+       El middleware la sirve en cualquier URL mientras la tienda no abre. -->
+  <style>
+  :root{
+    --bg:#080A08; --bg2:#0C100C; --bg3:#111511; --green:#00D47A; --yellow:#FFD100;
+    --white:#EEF5EE; --gray:#56685A; --border:rgba(0,212,122,.16);
+    --hd:'Barlow Condensed',sans-serif; --bd:'Bricolage Grotesque',sans-serif; --mo:'Space Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%;}
+  body{min-height:100vh;background:var(--bg);color:var(--white);font-family:var(--bd);
+    display:flex;align-items:center;justify-content:center;overflow-x:hidden;position:relative;padding:40px 24px;}
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  .bg-grid{position:absolute;inset:0;
+    background-image:linear-gradient(rgba(238,245,238,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(238,245,238,.02) 1px,transparent 1px);
+    background-size:100% 46px,46px 100%;
+    -webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 42%,#000 45%,transparent 100%);
+    mask-image:radial-gradient(ellipse 90% 80% at 50% 42%,#000 45%,transparent 100%);}
+  .bg-glow{position:absolute;inset:0;
+    background:radial-gradient(ellipse 700px 520px at 50% 18%,rgba(0,212,122,.14),transparent 62%),
+      radial-gradient(ellipse 600px 400px at 82% 88%,rgba(0,212,122,.08),transparent 60%),
+      linear-gradient(180deg,transparent 40%,rgba(6,8,6,.6));}
+  .bg-scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);}
+  .cs{position:relative;z-index:1;width:100%;max-width:640px;text-align:center;display:flex;flex-direction:column;align-items:center;}
+  .cs-logo{display:inline-flex;align-items:center;gap:11px;margin-bottom:44px;}
+  .cs-logo .mark{width:34px;height:34px;display:grid;place-items:center;}
+  .cs-logo .mark svg{width:100%;height:100%}
+  .cs-logo .wordmark{font-family:var(--hd);font-weight:900;font-style:italic;font-size:24px;letter-spacing:1px;text-transform:uppercase;}
+  .cs-badge{display:inline-flex;align-items:center;gap:9px;font-family:var(--mo);font-weight:700;font-size:11px;letter-spacing:2.5px;
+    text-transform:uppercase;color:var(--green);background:rgba(0,212,122,.08);border:1px solid var(--border);
+    border-radius:40px;padding:8px 16px;margin-bottom:28px;}
+  .cs-badge::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);
+    animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .cs-title{font-family:var(--hd);font-weight:900;font-style:italic;text-transform:uppercase;
+    font-size:clamp(52px,11vw,104px);line-height:.86;letter-spacing:-2px;margin-bottom:24px;}
+  .cs-title .acc{color:var(--green);}
+  .cs-sub{font-size:clamp(15px,2.4vw,18px);line-height:1.7;color:rgba(238,245,238,.82);max-width:460px;margin:0 auto 36px;}
+  .cs-sub b{color:var(--white);font-weight:600;}
+  .cs-form{display:flex;gap:10px;width:100%;max-width:440px;margin-bottom:14px;position:relative;}
+  .cs-input{flex:1;min-width:0;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:15px 16px;
+    font-family:var(--mo);font-size:13px;color:var(--white);outline:none;transition:border-color .2s;}
+  .cs-input::placeholder{color:var(--gray);text-transform:uppercase;letter-spacing:.5px;font-size:12px;}
+  .cs-input:focus{border-color:rgba(0,212,122,.5);}
+  .cs-btn{flex:none;background:var(--green);color:#04140C;border:none;border-radius:10px;padding:0 26px;cursor:pointer;
+    font-family:var(--hd);font-weight:900;font-style:italic;font-size:16px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;
+    box-shadow:0 12px 30px -10px rgba(0,212,122,.55);transition:transform .16s ease,filter .2s;}
+  .cs-btn:hover{transform:translateY(-2px);filter:brightness(1.06);}
+  .cs-btn:active{transform:translateY(0);}
+  .cs-btn:disabled{cursor:progress;filter:brightness(.85);transform:none;}
+  .cs-note{font-family:var(--mo);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin-bottom:48px;}
+  .cs-message{position:absolute;top:calc(100% + 8px);left:0;right:0;font-family:var(--mo);font-size:10px;line-height:1.4;color:var(--green);}
+  .cs-message.error{color:#ff7b7b;}
+  .cs-socials{display:flex;gap:12px;}
+  .cs-socials a{width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--border);border-radius:11px;
+    color:var(--gray);transition:color .2s,border-color .2s,transform .2s;}
+  .cs-socials a:hover{color:var(--green);border-color:rgba(0,212,122,.45);transform:translateY(-3px);}
+  .cs-foot{position:fixed;bottom:22px;left:0;right:0;z-index:1;text-align:center;
+    font-family:var(--mo);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);}
+  .owner-access{position:fixed;right:16px;bottom:14px;z-index:3;font-family:var(--mo);font-size:9px;color:#334137;}
+  .owner-access summary{cursor:pointer;list-style:none;text-transform:uppercase;letter-spacing:1px;}
+  .owner-access summary::-webkit-details-marker{display:none;}
+  .owner-panel{position:absolute;right:0;bottom:22px;width:230px;background:#0C100C;border:1px solid var(--border);border-radius:10px;padding:12px;}
+  .owner-panel form{display:flex;gap:6px;}
+  .owner-panel input{min-width:0;width:100%;background:#080A08;border:1px solid var(--border);border-radius:7px;padding:9px;color:var(--white);}
+  .owner-panel button{border:0;border-radius:7px;padding:8px 10px;background:var(--green);font-weight:700;cursor:pointer;}
+  .owner-error{margin-top:7px;color:#ff7b7b;font-size:9px;}
+  @media (max-width:520px){
+    .cs-form{flex-direction:column;}
+    .cs-btn{padding:15px;}
+    .owner-access{right:10px;bottom:8px;}
+  }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-scan"></div>
+  </div>
+
+  <main class="cs">
+    <div class="cs-logo">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H12z" fill="#00D47A"/></svg></span>
+      <span class="wordmark">Power Rush</span>
+    </div>
+
+    <span class="cs-badge">Próximamente · Argentina</span>
+
+    <h1 class="cs-title">Volvemos<br>con todo<span class="acc">.</span></h1>
+
+    <p class="cs-sub">La nueva fórmula ya está lista: <b>foco sin crash, sin azúcar, dosis reales.</b> Dejanos tu mail y sos el primero en enterarte cuando abra la tienda.</p>
+
+    <form class="cs-form" id="cs-form" novalidate>
+      <input class="cs-input" type="email" name="email" placeholder="Tu email" autocomplete="email" required aria-label="Tu email">
+      <button class="cs-btn" type="submit">Avisame</button>
+      <p class="cs-message" id="cs-message" role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="cs-note">Sin spam · Solo el aviso de apertura</div>
+
+    <div class="cs-socials">
+      <a href="#" aria-label="Instagram"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+      <a href="#" aria-label="TikTok"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8.2a5.4 5.4 0 0 0 3.2 1V6.7a3 3 0 0 1-2-.9 3 3 0 0 1-1-2.3H13.5v10.9a2.1 2.1 0 1 1-1.8-2.1V9.6a4.7 4.7 0 1 0 4.3 4.7V8.2z"/></svg></a>
+    </div>
+  </main>
+
+  <div class="cs-foot">Power Rush © 2026 · Suplemento cognitivo · No apto para menores de 18</div>
+
+  <!-- Acceso del equipo: /api/acceso valida la clave y deja una cookie por 30 días -->
+  <details class="owner-access" id="owner-access">
+    <summary>Acceso</summary>
+    <div class="owner-panel">
+      <form method="post" action="/api/acceso">
+        <input type="password" name="clave" placeholder="Contraseña" autocomplete="current-password" required>
+        <button type="submit">Entrar</button>
+      </form>
+      <p class="owner-error" id="owner-error" hidden>Contraseña incorrecta.</p>
+    </div>
+  </details>
+
+<script>
+/* El mail se guarda en Shopify como cliente suscripto al newsletter, igual que
+   el formulario de la página de contraseña de la tienda. La Storefront API con
+   el token público (el mismo de cart.js) lo permite sin pasar por el tema. */
+(function () {
+  'use strict';
+  var SHOP = '6q1n8a-jw.myshopify.com';
+  var TOKEN = '86f826b1c8e239cacd6e97100784c83f';
+  var API = 'https://' + SHOP + '/api/unstable/graphql.json'; // la mutation solo existe en unstable
+  var MUTATION = 'mutation($e:String!){customerEmailMarketingSubscribe(email:$e){customer{id} customerUserErrors{code message}}}';
+
+  var form = document.getElementById('cs-form');
+  var input = form.querySelector('input');
+  var btn = form.querySelector('button');
+  var msg = document.getElementById('cs-message');
+
+  function say(text, isError) {
+    msg.textContent = text;
+    msg.className = 'cs-message' + (isError ? ' error' : '');
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = input.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { say('Revisá el email, parece que le falta algo.', true); input.focus(); return; }
+    btn.disabled = true; say('');
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Shopify-Storefront-Access-Token': TOKEN },
+      body: JSON.stringify({ query: MUTATION, variables: { e: email } })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var res = d && d.data && d.data.customerEmailMarketingSubscribe;
+        var errs = res && res.customerUserErrors || [];
+        if (res && !errs.length) { form.reset(); say('¡Listo! Te avisamos apenas abra la tienda.'); return; }
+        // ya suscripto: para la persona es lo mismo, queda en la lista
+        if (errs.some(function (x) { return /TAKEN|ALREADY/i.test(x.code || ''); })) { form.reset(); say('Ya estabas en la lista. Te avisamos apenas abra.'); return; }
+        say(errs[0] && errs[0].code === 'INVALID' ? 'Ese email no parece válido.' : 'No pudimos anotarte. Probá de nuevo en un rato.', true);
+      })
+      .catch(function () { say('No pudimos anotarte. Probá de nuevo en un rato.', true); })
+      .then(function () { btn.disabled = false; });
+  });
+
+  // vuelta del login con clave incorrecta
+  if (/[?&]acceso=error/.test(location.search)) {
+    document.getElementById('owner-access').open = true;
+    document.getElementById('owner-error').hidden = false;
+    history.replaceState(null, '', location.pathname);
+  }
+})();
+</script>
+</body>
+</html>
