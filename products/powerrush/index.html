@@ -476,6 +476,74 @@
     @media (max-width: 640px) { .rev-cols { grid-template-columns: 1fr; } .rev-col:nth-child(2) { display: none; } .rev-col:nth-child(1) .rev-col-inner { animation-duration: 20s; } }
     @media (prefers-reduced-motion: reduce) { .rev-col-inner { animation: none !important; } }
 
+    /* ===== TODAS LAS RESEÑAS (lista completa desde Judge.me, la llena /reviews.js) ===== */
+    #todas-resenas { padding: 80px 0 96px; border-top: 1px solid var(--border); background: var(--bg); }
+    #todas-resenas [hidden] { display: none !important; }
+    .ar-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .ar-header { margin-bottom: 44px; }
+    .ar-overline { font-family: var(--mo); font-weight: 700; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+    .ar-title { font-family: var(--hd); font-weight: 900; font-style: italic; font-size: clamp(36px, 4vw, 52px); text-transform: uppercase; line-height: .95; letter-spacing: -.5px; }
+    .ar-layout { display: grid; grid-template-columns: 320px 1fr; gap: 40px; align-items: start; }
+    .ar-summary { position: sticky; top: calc(var(--annh) + 60px + 24px); background: var(--bg2); border: 1px solid var(--border); padding: 28px 24px; }
+    .ar-score { display: flex; align-items: center; gap: 16px; padding-bottom: 22px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+    .ar-num { font-family: var(--hd); font-weight: 900; font-style: italic; font-size: 64px; line-height: .85; letter-spacing: -1px; }
+    .ar-stars { color: var(--yellow); font-size: 18px; letter-spacing: 3px; }
+    .ar-total { font-family: var(--mo); font-size: 10px; color: var(--gray); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 6px; }
+    .ar-bars { display: flex; flex-direction: column; gap: 4px; }
+    .ar-bar { display: grid; grid-template-columns: 34px 1fr 38px; align-items: center; gap: 10px; background: none; border: 1px solid transparent; padding: 6px 8px; margin: 0 -8px; width: calc(100% + 16px); color: var(--white); font-family: var(--mo); font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: background .16s, border-color .16s; }
+    .ar-bar:hover:not(:disabled) { background: rgba(238,245,238,.04); }
+    .ar-bar.active { border-color: var(--green); background: rgba(0,212,122,.07); }
+    .ar-bar:disabled { opacity: .4; cursor: default; }
+    .ar-bar-l { text-align: left; white-space: nowrap; }
+    .ar-bar-l b { color: var(--yellow); font-weight: 400; }
+    .ar-bar-track { height: 6px; background: rgba(238,245,238,.08); overflow: hidden; }
+    .ar-bar-fill { display: block; height: 100%; background: var(--yellow); }
+    .ar-bar-n { text-align: right; color: var(--gray); }
+    .ar-hint { font-family: var(--mo); font-size: 9px; color: var(--gray); letter-spacing: 1.2px; text-transform: uppercase; margin-top: 14px; }
+    .ar-clear { margin-top: 14px; background: none; border: none; padding: 0; color: var(--green); font-family: var(--mo); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    .ar-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+    .ar-showing { font-family: var(--mo); font-size: 10px; color: var(--gray); letter-spacing: 1.5px; text-transform: uppercase; }
+    .ar-sort { display: flex; gap: 6px; }
+    .ar-sort-btn { background: none; border: 1px solid var(--border); color: rgba(238,245,238,.72); padding: 7px 14px; font-family: var(--mo); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: color .16s, border-color .16s; }
+    .ar-sort-btn:hover { color: var(--white); }
+    .ar-sort-btn.active { color: var(--green); border-color: var(--green); }
+    .ar-list { display: flex; flex-direction: column; gap: 12px; transition: opacity .2s; }
+    .ar-list.loading { opacity: .45; }
+    .ar-item { background: var(--bg2); border: 1px solid var(--border); padding: 24px; }
+    .ar-item-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .ar-ava { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--hd); font-weight: 900; font-size: 16px; color: var(--bg); flex-shrink: 0; }
+    .ar-who { flex: 1; min-width: 0; }
+    .ar-name { font-family: var(--hd); font-weight: 700; font-size: 16px; text-transform: uppercase; line-height: 1.1; }
+    .ar-meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+    .ar-item-stars { color: var(--yellow); font-size: 12px; letter-spacing: 2px; }
+    .ar-item-stars .off { color: rgba(238,245,238,.2); }
+    .ar-verified { font-family: var(--mo); font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green); }
+    .ar-date { font-family: var(--mo); font-size: 9px; color: var(--gray); letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; align-self: flex-start; }
+    .ar-item-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+    .ar-text { font-size: 15px; color: rgba(238,245,238,.92); line-height: 1.7; white-space: pre-line; overflow-wrap: anywhere; }
+    .ar-pics { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+    .ar-pic { width: 72px; height: 72px; padding: 0; border: 1px solid var(--border); background: var(--bg3); cursor: zoom-in; overflow: hidden; transition: border-color .16s; }
+    .ar-pic:hover { border-color: var(--green); }
+    .ar-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ar-reply { margin-top: 16px; padding: 14px 16px; border-left: 3px solid var(--green); background: rgba(0,212,122,.05); }
+    .ar-reply-by { font-family: var(--mo); font-weight: 700; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 6px; }
+    .ar-reply p { font-size: 14px; color: rgba(238,245,238,.85); line-height: 1.6; white-space: pre-line; }
+    .ar-empty { font-family: var(--mo); font-size: 12px; color: var(--gray); letter-spacing: 1px; padding: 40px 0; text-align: center; }
+    .ar-more { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 24px auto 0; background: none; border: 1px solid var(--green); color: var(--green); padding: 12px 28px; font-family: var(--hd); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: .5px; cursor: pointer; transition: background .16s, color .16s; }
+    .ar-more:hover:not(:disabled) { background: var(--green); color: var(--bg); }
+    .ar-more:disabled { opacity: .6; cursor: progress; }
+    .ar-zoom { position: fixed; inset: 0; z-index: 2000; background: rgba(4,6,4,.92); display: flex; align-items: center; justify-content: center; padding: 24px; cursor: zoom-out; }
+    .ar-zoom img { max-width: 100%; max-height: 100%; object-fit: contain; border: 1px solid var(--border); }
+    .ar-zoom-close { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; background: var(--bg2); border: 1px solid var(--border); color: var(--white); font-size: 20px; line-height: 1; cursor: pointer; }
+    @media (max-width: 900px) {
+      .ar-layout { grid-template-columns: 1fr; gap: 24px; }
+      .ar-summary { position: static; }
+    }
+    @media (max-width: 640px) {
+      #todas-resenas { padding: 64px 0 72px; }
+      .ar-item { padding: 20px 18px; }
+    }
+
     /* ===== CROSS-SELL ===== */
     #cross-sell { padding: 80px 0; border-top: 1px solid var(--border); background: var(--bg2); }
     .cs-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
@@ -637,7 +705,7 @@
 
       <div class="prod-rating">
         <span class="prod-stars">★★★★★</span>
-        <span class="prod-rating-text">4.7 · <a href="#prod-reviews" class="rating-count">+937 reseñas</a></span>
+        <span class="prod-rating-text"><span data-rv-rating>4.6</span> · <a href="#prod-reviews" class="rating-count" data-rv-all-link><span data-rv-count>738</span> reseñas</a></span>
       </div>
 
       <h1 class="prod-title">POWER RUSH<br><span class="flavor-name" id="title-flavor">CHERRY POP</span></h1>
@@ -751,10 +819,10 @@
 <section id="prod-reviews">
   <div class="rev-wrap">
     <div class="rev-header rev-header-join">
-      <div class="rev-stars-top">★★★★★ <span>4.7/5 · +700 reseñas verificadas</span></div>
+      <div class="rev-stars-top">★★★★★ <span><span data-rv-rating>4.6</span>/5 · <span data-rv-count>738</span> reseñas verificadas</span></div>
       <h2 class="rev-title-join">Sumate a los que<br>ya confiaron<span class="join-dot">.</span></h2>
     </div>
-    <div class="rev-cols" id="rev-cols"></div>
+    <div class="rev-cols" id="rev-cols" data-rv-cols data-rv-per-col="4"></div>
   </div>
 </section>
 
@@ -1129,8 +1197,40 @@
   </div>
 </section>
 
-<!-- ===== RESEÑAS ===== -->
-
+<!-- ===== TODAS LAS RESEÑAS (oculta hasta que responde Judge.me) ===== -->
+<section id="todas-resenas" data-rv-all hidden>
+  <div class="ar-wrap">
+    <div class="ar-header">
+      <div class="ar-overline">Reseñas · Sin filtro</div>
+      <h2 class="ar-title">Todas las<br>reseñas.</h2>
+    </div>
+    <div class="ar-layout">
+      <aside class="ar-summary">
+        <div class="ar-score">
+          <span class="ar-num" data-rv-rating>4.6</span>
+          <div>
+            <div class="ar-stars" aria-hidden="true">★★★★★</div>
+            <div class="ar-total"><span data-rv-count>738</span> reseñas</div>
+          </div>
+        </div>
+        <div class="ar-bars" data-rv-bars></div>
+        <div class="ar-hint" data-rv-hint>Tocá una barra para filtrar</div>
+        <button type="button" class="ar-clear" data-rv-clear hidden>Ver todas las estrellas</button>
+      </aside>
+      <div class="ar-main">
+        <div class="ar-toolbar">
+          <span class="ar-showing" data-rv-showing></span>
+          <div class="ar-sort" role="group" aria-label="Ordenar reseñas">
+            <button type="button" class="ar-sort-btn active" data-rv-sort="" aria-pressed="true">Recientes</button>
+            <button type="button" class="ar-sort-btn" data-rv-sort="pictures_first" aria-pressed="false">Con fotos</button>
+          </div>
+        </div>
+        <div class="ar-list" data-rv-list aria-live="polite"></div>
+        <button type="button" class="ar-more" data-rv-more hidden>Ver más reseñas</button>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ===== CROSS-SELL ===== -->
 <section id="cross-sell">
@@ -1345,7 +1445,7 @@ document.addEventListener('pr:catalog', function () {
 });
 
 /* TABS */
-/* REVIEWS reales (columnas que scrollean, como la home) */
+/* REVIEWS de fallback: /reviews.js las reemplaza por las de Judge.me cuando responde */
 const REVIEWS = [
   { t:'Es increíble el producto. Estoy diez mil veces más atento y con más ganas. Lo uso para laburar y me cambió todo.', n:'Lucas', r:'Trabajo · Verificado', c:'#00D47A' },
   { t:'Te levanta re piola y no te lo baja al ratito, como esas bebidas en latita llenas de azúcar. Lo recomiendo.', n:'Luciana', r:'Uso diario · Verificado', c:'#3B82F6' },
@@ -1572,5 +1672,6 @@ window.addEventListener('scroll', () => {
 })();
 </script>
 <script src="/cart.js" defer></script>
+<script src="/reviews.js" defer></script>
 </body>
 </html>
