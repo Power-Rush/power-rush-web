@@ -72,8 +72,8 @@
   function nextTier() {
     var tq = totalQty();
     if (tq >= 3) return null;                              // máximo descuento alcanzado
-    if (tq === 2) return { pct: 15, ship: false };         // 3 potes → −15%
-    return { pct: 10, ship: true };                        // 2 potes → −10% + envío gratis
+    if (tq === 2) return { pct: 10, ship: false };         // 3 potes → −10% (ya tiene envío gratis)
+    return { pct: 0, ship: true };                         // 2 potes → envío gratis
   }
 
   /* ---- Acciones ---------------------------------------------------------- */
@@ -82,6 +82,21 @@
     q = q || 1;
     setQty(id, qtyOf(id) + q);
     track('agregar_carrito', { sabor: id, cantidad: q, detalle: origen || 'pagina' });
+    open(); pulse();
+  }
+  /* Combo de la página de producto: varios sabores de una vez y un solo evento. */
+  function addCombo(sabores, origen) {
+    var total = 0, detalle = [];
+    ORDER.forEach(function (id) {
+      var q = sabores[id] || 0;
+      if (!q || !PRODUCTS[id] || soldOut(id)) return;
+      state[id] = Math.min(qtyOf(id) + q, maxFor(id));
+      total += q;
+      detalle.push(id + '×' + q);
+    });
+    if (!total) return;
+    save(); render();
+    track('agregar_carrito', { cantidad: total, detalle: (origen || 'pagina') + ' combo ' + detalle.join(' ') });
     open(); pulse();
   }
   function setQty(id, q) {
@@ -211,7 +226,7 @@
     var upsell = '';
     if (tier) {
       var benefit = tier.ship
-        ? '<b>−' + tier.pct + '% + envío gratis</b>'
+        ? '<b>envío gratis</b>'
         : '<b>−' + tier.pct + '% de descuento</b>';
       var bolt = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13z"/></svg>';
       upsell =
@@ -234,7 +249,7 @@
       upsell =
         '<div class="pr-maxed">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
-          'Máximo descuento activado · −15%' +
+          'Envío gratis + −10% activados' +
         '</div>';
     }
 
@@ -462,7 +477,7 @@
 
   /* ---- API pública ------------------------------------------------------- */
   window.PowerCart = {
-    add: add, open: open, close: close, remove: remove,
+    add: add, addCombo: addCombo, open: open, close: close, remove: remove,
     setQty: setQty, count: totalQty, subtotal: subtotal,
     unitPrice: unitPrice, money: money,
     stock: function (id) { return LIVE.stock[id] || null; },

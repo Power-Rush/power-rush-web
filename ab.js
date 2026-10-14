@@ -30,8 +30,9 @@
 
   function grupoValido(g) { return Object.prototype.hasOwnProperty.call(CONFIG.grupos, g); }
 
-  /* AHORROPACK (−10% desde 2 potes) y AHORRO15% (−15% desde 3) en Shopify. */
-  function pct(cantidad) { return cantidad >= 3 ? 15 : cantidad === 2 ? 10 : 0; }
+  /* Oferta por cantidad: 2 potes, envío gratis; 3 o más, envío gratis y −10% sobre el total
+     (descuento automático AHORRO10% en Shopify). */
+  function pct(cantidad) { return cantidad >= 3 ? 10 : 0; }
 
   /* Total como lo calcula Shopify: porcentaje sobre el total, en centavos exactos. */
   function total(precio, cantidad) {

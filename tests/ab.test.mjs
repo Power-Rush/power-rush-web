@@ -15,20 +15,20 @@ test('config: tres precios y A como control', () => {
 });
 
 test('descuento por cantidad como en Shopify', () => {
-  assert.deepEqual([0, 1, 2, 3, 4].map(pct), [0, 0, 10, 15, 15]);
+  assert.deepEqual([0, 1, 2, 3, 4].map(pct), [0, 0, 0, 10, 10]);
 });
 
 test('totales iguales a los del checkout (descuento sobre el total)', () => {
   assert.equal(total(44999, 1), 44999);
-  assert.equal(total(44999, 2), 80998.2);
-  assert.equal(total(44999, 3), 114747.45);
-  assert.equal(total(47749, 2), 85948.2);
-  assert.equal(total(47749, 3), 121759.95);
-  assert.equal(total(49999, 2), 89998.2);
-  assert.equal(total(49999, 3), 127497.45);
-  assert.equal(total(44999, 4), 152996.6);
+  assert.equal(total(44999, 2), 89998);
+  assert.equal(total(44999, 3), 121497.3);
+  assert.equal(total(47749, 2), 95498);
+  assert.equal(total(47749, 3), 128922.3);
+  assert.equal(total(49999, 2), 99998);
+  assert.equal(total(49999, 3), 134997.3);
+  assert.equal(total(44999, 4), 161996.4);
   assert.equal(total(44999, 0), 0);
-  assert.equal(porUnidad(44999, 2), 40499.1);
+  assert.equal(porUnidad(44999, 3), 40499.1);
 });
 
 test('formato de pesos sin centavos', () => {
@@ -40,8 +40,9 @@ test('formato de pesos sin centavos', () => {
 
 test('textos por tipo de precio', () => {
   assert.equal(texto('total', 44999, 1), '$44.999');
-  assert.equal(texto('total', 47749, 3), '$121.760');
-  assert.equal(texto('cu', 44999, 2), '$40.499');
+  assert.equal(texto('total', 47749, 3), '$128.922');
+  assert.equal(texto('cu', 44999, 2), '$44.999');
+  assert.equal(texto('cu', 44999, 3), '$40.499');
   assert.equal(texto('porcion', 44999), '$1.500');
   assert.equal(texto('porcion', 47749), '$1.592');
   assert.equal(texto('porcion', 49999), '$1.667');
@@ -146,11 +147,11 @@ test('boot: expone PR_AB, pinta precios y manda la vista', async () => {
   const ab = win.PR_AB;
   assert.equal(ab.grupo, 'B');
   assert.equal(ab.precio, 47749);
-  assert.equal(ab.total(2), 85948.2);
+  assert.equal(ab.total(2), 95498);
   assert.equal(ab.variantes, CONFIG.grupos.B.variantes);
   const el = elemento({ 'data-ab-precio': 'cu', 'data-ab-n': '3' });
   ab.pintar(el);
-  assert.equal(el.textContent, '$40.587');
+  assert.equal(el.textContent, '$42.974');
   assert.ok('data-ab-ok' in el.attrs);
   assert.equal(beacons.length, 1);
   assert.equal(beacons[0].url, '/api/ab/event');

@@ -151,10 +151,21 @@
     .qty-ship { display: none; }
     .qty-card.active { border-color: var(--green); background: linear-gradient(180deg, rgba(0,212,122,.12), rgba(0,212,122,.02) 50%), rgba(0,212,122,.03); box-shadow: 0 0 22px rgba(0,212,122,.18), inset 0 0 22px rgba(0,212,122,.05); }
 
-    /* Envío gratis — bracket que abarca packs 2 y 3 */
-    .qty-ship-bracket { margin-left: calc((100% - 16px)/3 + 8px); margin-top: 6px; }
-    .qty-ship-line { height: 7px; border: 1px solid rgba(0,212,122,.4); border-top: none; }
-    .qty-ship-txt { display: block; text-align: center; margin-top: 6px; font-family: var(--mo); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green); }
+    /* Beneficio de cada pack (envío gratis / −10%) */
+    .qty-perk { flex-basis: 100%; text-align: center; font-family: var(--mo); font-size: 10px; line-height: 1.35; letter-spacing: 1px; text-transform: uppercase; color: var(--green); }
+
+    /* Combo: sabor de cada pote cuando se eligen 2 o 3 */
+    .combo { margin-top: 10px; border: 1px solid rgba(0,212,122,.3); border-radius: 8px; padding: 12px 14px; background: rgba(0,212,122,.03); }
+    .combo[hidden] { display: none; }
+    .combo-title { font-family: var(--mo); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--white); margin-bottom: 6px; }
+    .combo-slot { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.06); }
+    .combo-slot:first-of-type { border-top: none; }
+    .combo-n { font-family: var(--hd); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: .5px; min-width: 58px; }
+    .combo-opts { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .combo-opt { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 8px; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; background: transparent; color: var(--white); font-family: var(--hd); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: .5px; transition: border-color .2s, background .2s; }
+    .combo-opt:hover { border-color: rgba(255,255,255,.24); }
+    .combo-opt.active { border-color: var(--green); background: rgba(0,212,122,.1); }
+    .combo-opt:disabled { opacity: .4; pointer-events: none; }
 
     /* Price */
     .prod-price-row { display: flex; align-items: baseline; gap: 14px; }
@@ -763,7 +774,7 @@
               <span class="qty-total" data-ab-precio="cu" data-ab-n="2"></span>
               <span class="qty-save">cada uno</span>
             </span>
-            <span class="qty-ship">✓ Envío gratis</span>
+            <span class="qty-perk">Con envío gratis</span>
           </div>
 
           <div class="qty-card" data-n="3" onclick="selectQty(3, this)">
@@ -777,11 +788,14 @@
               <span class="qty-total" data-ab-precio="cu" data-ab-n="3"></span>
               <span class="qty-save">cada uno</span>
             </span>
-            <span class="qty-ship">✓ Envío gratis</span>
+            <span class="qty-perk">Envío gratis + 10% off</span>
           </div>
 
         </div>
-        <div class="qty-ship-bracket"><div class="qty-ship-line"></div><span class="qty-ship-txt">✓ Envío gratis</span></div>
+        <div class="combo" id="combo" hidden>
+          <div class="combo-title">Elegí el sabor de cada pote</div>
+          <div id="combo-slots"></div>
+        </div>
         </div><!-- /qty-wrap -->
       </div>
 
@@ -1396,12 +1410,46 @@ function selectQty(n, el) {
     if (window.PR_AB) PR_AB.pintar(p);
   });
   const ship = document.getElementById('price-ship');
-  ship.textContent = n >= 2 ? 'Envío gratis' : 'Envío a calcular';
+  ship.textContent = n >= 3 ? 'Envío gratis + 10% off' : n === 2 ? 'Envío gratis' : 'Envío a calcular';
   ship.classList.toggle('ship-free', n >= 2);
+  renderCombo();
 }
 
+/* COMBO — con 2 o 3 potes, cada pote elige su sabor. Arranca con el sabor elegido arriba
+   y conserva lo que ya se eligió al pasar de 2 a 3 (o al revés). */
+let comboSabores = [];
+function renderCombo() {
+  const box = document.getElementById('combo');
+  if (currentQty < 2) { box.hidden = true; return; }
+  while (comboSabores.length < currentQty) comboSabores.push(currentFlavor);
+  comboSabores.length = currentQty;
+  const C = window.PowerCart;
+  const otro = f => f === 'cp' ? 'bf' : 'cp';
+  if (C) comboSabores = comboSabores.map(f => C.soldOut(f) && !C.soldOut(otro(f)) ? otro(f) : f);
+  document.getElementById('combo-slots').innerHTML = comboSabores.map((f, i) =>
+    '<div class="combo-slot"><span class="combo-n">Pote ' + (i + 1) + '</span><div class="combo-opts">' +
+    ['cp', 'bf'].map(o =>
+      '<button type="button" class="combo-opt' + (o === f ? ' active' : '') + '" data-slot="' + i + '" data-f="' + o + '"' +
+      (C && C.soldOut(o) ? ' disabled' : '') + '><span class="flavor-dot ' + o + '"></span>' + flavorData[o].lbl + '</button>'
+    ).join('') + '</div></div>'
+  ).join('');
+  box.hidden = false;
+}
+document.getElementById('combo').addEventListener('click', function (e) {
+  const b = e.target.closest('.combo-opt');
+  if (!b) return;
+  comboSabores[+b.dataset.slot] = b.dataset.f;
+  renderCombo();
+});
+
 /* ADD TO CART */
-function addToCart() { if (window.PowerCart) PowerCart.add(currentFlavor, currentQty, 'producto'); }
+function addToCart() {
+  if (!window.PowerCart) return;
+  if (currentQty === 1) { PowerCart.add(currentFlavor, 1, 'producto'); return; }
+  const cuenta = {};
+  comboSabores.forEach(f => { cuenta[f] = (cuenta[f] || 0) + 1; });
+  PowerCart.addCombo(cuenta, 'producto');
+}
 
 /* ===== CATÁLOGO VIVO — el stock sale de Shopify (ver cart.js); los precios los pinta /ab.js ===== */
 document.addEventListener('pr:catalog', function () {
@@ -1422,6 +1470,7 @@ document.addEventListener('pr:catalog', function () {
     var other = currentFlavor === 'bf' ? 'cp' : 'bf';
     if (!C.soldOut(other)) selectFlavor(other);
   }
+  renderCombo();
   var cta = document.querySelector('.prod-cta');
   if (cta) {
     var noStock = C.soldOut('bf') && C.soldOut('cp');

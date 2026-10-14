@@ -12,11 +12,15 @@ para comparar conversión, ingreso por visitante, ticket promedio y el resto del
 
 ## Grupos
 
-| Grupo | Rol | Precio 1 pote | 2 potes (−10%) | 3 potes (−15%) | Por porción | Tráfico |
+| Grupo | Rol | Precio 1 pote | 2 potes (envío gratis) | 3 potes (envío gratis + −10%) | Por porción | Tráfico |
 |---|---|---|---|---|---|---|
-| A | control | $44.999 | $80.998,20 | $114.747,45 | $1.500 | 1/3 |
-| B | | $47.749 | $85.948,20 | $121.759,95 | $1.592 | 1/3 |
-| C | | $49.999 | $89.998,20 | $127.497,45 | $1.667 | 1/3 |
+| A | control | $44.999 | $89.998 | $121.497,30 | $1.500 | 1/3 |
+| B | | $47.749 | $95.498 | $128.922,30 | $1.592 | 1/3 |
+| C | | $49.999 | $99.998 | $134.997,30 | $1.667 | 1/3 |
+
+Oferta por cantidad desde 2026-10-14 (antes: −10% desde 2 y −15% desde 3): 2 potes con
+envío gratis, 3 o más con envío gratis y −10% (descuento automático AHORRO10%, AHORROPACK
+desactivado).
 
 - Precios sin centavos. Los descuentos por cantidad (AHORROPACK −10% desde 2 potes,
   AHORRO15% −15% desde 3) son descuentos automáticos de pedido en Shopify, aplican a
