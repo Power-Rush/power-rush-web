@@ -31,7 +31,7 @@
   function grupoValido(g) { return Object.prototype.hasOwnProperty.call(CONFIG.grupos, g); }
 
   /* Oferta por cantidad: 2 potes, envío gratis; 3 o más, envío gratis y −10% sobre el total
-     (descuento automático AHORRO10% en Shopify). */
+     (descuento automático "10% OFF" en Shopify). */
   function pct(cantidad) { return cantidad >= 3 ? 10 : 0; }
 
   /* Total como lo calcula Shopify: porcentaje sobre el total, en centavos exactos. */

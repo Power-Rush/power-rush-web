@@ -19,7 +19,7 @@ para comparar conversión, ingreso por visitante, ticket promedio y el resto del
 | C | | $49.999 | $99.998 | $134.997,30 | $1.667 | 1/3 |
 
 Oferta por cantidad desde 2026-10-14 (antes: −10% desde 2 y −15% desde 3): 2 potes con
-envío gratis, 3 o más con envío gratis y −10% (descuento automático AHORRO10%, AHORROPACK
+envío gratis, 3 o más con envío gratis y −10% (descuento automático "10% OFF", AHORROPACK
 desactivado).
 
 - Precios sin centavos. Los descuentos por cantidad (AHORROPACK −10% desde 2 potes,
