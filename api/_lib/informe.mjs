@@ -19,7 +19,7 @@ function segmentoSql(columna) {   // columna fija: 'device' o 'source'
     ),
     compras as (
       select visitor, sum(total) as ingreso from ab_orders
-      where test = $1 and not qa and status <> 'cancelled' and visitor is not null
+      where test = $1 and not qa and not inferred and status <> 'cancelled' and visitor is not null
       group by visitor
     )
     select p.grp, p.segmento, count(*)::int as visitantes, count(c.visitor)::int as compradores,
@@ -65,7 +65,10 @@ export function armarInforme(datos, CONFIG, ahora = new Date()) {
   const ids = Object.keys(CONFIG.grupos);
   const grupos = ids.map((id) => {
     const e = datos.embudo.find((x) => x.grp === id) || {};
-    const ords = datos.ordenes.filter((o) => o.grp === id);
+    const delGrupo = datos.ordenes.filter((o) => o.grp === id);
+    // Las órdenes inferidas (sin atributos del test) no tienen visitante en el denominador:
+    // se muestran aparte y no entran en conversión, ingreso ni estadística.
+    const ords = delGrupo.filter((o) => !o.inferred);
     const porVisitante = new Map();
     ords.forEach((o, i) => {
       const k = o.visitor || `orden-${i}`;
@@ -77,7 +80,7 @@ export function armarInforme(datos, CONFIG, ahora = new Date()) {
     return {
       id, precio: CONFIG.grupos[id].precio, visitantes,
       agregaron: Number(e.agregaron) || 0, fueronCheckout: Number(e.fueron_checkout) || 0, iniciaronCheckout: Number(e.iniciaron_checkout) || 0,
-      compradores: porVisitante.size, ordenes: ords.length, inferidas: ords.filter((o) => o.inferred).length,
+      compradores: porVisitante.size, ordenes: ords.length, inferidas: delGrupo.length - ords.length,
       unidades, ingreso,
       tasaCarrito: tasa(e.agregaron, visitantes), tasaCheckout: tasa(e.fueron_checkout, visitantes),
       conversion: tasa(porVisitante.size, visitantes),

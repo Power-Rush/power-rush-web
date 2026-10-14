@@ -27,6 +27,7 @@ test('firma HMAC de Shopify', () => {
 test('orden con atributos → fila', () => {
   assert.deepEqual(filaOrden(orden()), {
     order_id: '6123456789012', order_name: '#1042', created_at: '2026-11-02T15:04:05-03:00',
+    shopify_updated_at: null,
     test: 'precio1', grp: 'B', visitor: '0123456789abcdef', inferred: false, qa: false,
     units: 3, subtotal: 143247, discounts: 21487.05, total: 121759.95, discount_codes: [], status: 'paid',
   });
@@ -56,4 +57,9 @@ test('etiquetas sin duplicar (webhook repetido o orders/updated)', () => {
   assert.deepEqual(etiquetasPara(f, ''), ['ab-precio1-B']);
   assert.deepEqual(etiquetasPara(f, 'vip, ab-precio1-B'), []);
   assert.deepEqual(etiquetasPara({ ...f, qa: true, inferred: true }, 'ab-precio1-B'), ['ab-qa', 'ab-inferido']);
+});
+
+test('la fila guarda el updated_at de Shopify para no pisar datos más nuevos', () => {
+  assert.equal(filaOrden(orden({ updated_at: '2026-11-02T16:00:00-03:00' })).shopify_updated_at, '2026-11-02T16:00:00-03:00');
+  assert.equal(filaOrden(orden()).shopify_updated_at, null);
 });

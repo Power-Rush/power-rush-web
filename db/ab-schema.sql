@@ -40,3 +40,4 @@ create table if not exists ab_orders (
   status         text not null
 );
 create index if not exists ab_orders_test_grp on ab_orders (test, grp);
+alter table ab_orders add column if not exists shopify_updated_at timestamptz;

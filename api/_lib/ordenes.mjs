@@ -48,6 +48,7 @@ export function filaOrden(orden) {
     order_id: String(orden.id),
     order_name: orden.name || null,
     created_at: orden.created_at,
+    shopify_updated_at: orden.updated_at || null,
     test: CONFIG.test,
     grp,
     visitor: atributo(orden, '_ab_visitor'),

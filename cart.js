@@ -58,7 +58,8 @@
      visitante antes de que cargue la página. Sin ab.js: precio de Shopify, sin descuento. */
   function AB() { return window.PR_AB || null; }
   function base() { var ab = AB(); return ab ? ab.precio : (PRODUCTS.bf.price || PRODUCTS.cp.price || 0); }
-  function variante(id) { var ab = AB(); return (ab && ab.variantes[id]) || SHOPIFY.variants[id]; }
+  /* Con el test activo, solo la variante del grupo: caer a la de A cambiaría el precio sin avisar. */
+  function variante(id) { var ab = AB(); return ab ? ab.variantes[id] : SHOPIFY.variants[id]; }
   function track(evento, datos) { var ab = AB(); if (ab) ab.track(evento, datos); }
   function discPct(tq) { tq = (tq == null) ? totalQty() : tq; var ab = AB(); return ab ? ab.pct(tq) : 0; }
   function subtotal(tq) { tq = (tq == null) ? totalQty() : tq; var ab = AB(); return ab ? ab.total(tq) : base() * tq; }
@@ -319,8 +320,11 @@
     if (btn) { btn.classList.add('loading'); btn.textContent = 'Preparando tu pedido…'; }
     track('clic_comprar', { cantidad: totalQty(), valor: subtotal() });
 
+    var sinVariante = ORDER.filter(function (id) { return qtyOf(id) > 0 && !variante(id); });
+    if (sinVariante.length) { return fallaCheckout(btn, 'sin variante del grupo para ' + sinVariante.join(', ')); }
+
     var input = {
-      lines: ORDER.filter(function (id) { return qtyOf(id) > 0 && variante(id); })
+      lines: ORDER.filter(function (id) { return qtyOf(id) > 0; })
         .map(function (id) { return { merchandiseId: variante(id), quantity: qtyOf(id) }; }),
       attributes: AB() ? AB().atributos() : []
     };
@@ -331,15 +335,17 @@
       var data = res && res.data && res.data.cartCreate;
       var url = data && data.cart && data.cart.checkoutUrl;
       if (url) { window.location.href = url; return; }
-      track('error_checkout', {
-        detalle: data && data.userErrors && data.userErrors.length
-          ? data.userErrors.map(function (u) { return u.message; }).join('; ')
-          : 'sin respuesta de Shopify'
-      });
-      checkout.busy = false;
-      if (btn) { btn.classList.remove('loading'); btn.textContent = 'Comprar'; }
-      alert('No pudimos abrir el checkout. Probá de nuevo en unos segundos.');
+      fallaCheckout(btn, data && data.userErrors && data.userErrors.length
+        ? data.userErrors.map(function (u) { return u.message; }).join('; ')
+        : 'sin respuesta de Shopify');
     }, { input: input });
+  }
+
+  function fallaCheckout(btn, detalle) {
+    track('error_checkout', { detalle: detalle });
+    checkout.busy = false;
+    if (btn) { btn.classList.remove('loading'); btn.textContent = 'Comprar'; }
+    alert('No pudimos abrir el checkout. Probá de nuevo en unos segundos.');
   }
 
   /* ---- Sync con Shopify: precio, stock e imágenes ------------------------ */

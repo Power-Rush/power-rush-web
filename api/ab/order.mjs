@@ -31,10 +31,13 @@ export async function POST(request) {
 
 async function guardar(f) {
   await db()`insert into ab_orders
-    (order_id, order_name, created_at, test, grp, visitor, inferred, qa, units, subtotal, discounts, total, discount_codes, status)
-    values (${f.order_id}, ${f.order_name}, ${f.created_at}, ${f.test}, ${f.grp}, ${f.visitor}, ${f.inferred}, ${f.qa},
+    (order_id, order_name, created_at, shopify_updated_at, test, grp, visitor, inferred, qa, units, subtotal, discounts, total, discount_codes, status)
+    values (${f.order_id}, ${f.order_name}, ${f.created_at}, ${f.shopify_updated_at}, ${f.test}, ${f.grp}, ${f.visitor}, ${f.inferred}, ${f.qa},
             ${f.units}, ${f.subtotal}, ${f.discounts}, ${f.total}, ${f.discount_codes}, ${f.status})
     on conflict (order_id) do update set
       status = excluded.status, total = excluded.total, discounts = excluded.discounts,
-      units = excluded.units, updated_at = now()`;
+      units = excluded.units, shopify_updated_at = excluded.shopify_updated_at, updated_at = now()
+    -- Shopify no garantiza el orden de entrega: un webhook viejo no pisa uno más nuevo
+    where ab_orders.shopify_updated_at is null or excluded.shopify_updated_at is null
+       or excluded.shopify_updated_at >= ab_orders.shopify_updated_at`;
 }

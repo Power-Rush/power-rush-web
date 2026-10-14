@@ -25,13 +25,13 @@ test('métricas por grupo', () => {
   assert.equal(inf.generado, '2026-11-10T12:00:00.000Z');
   const [a, b, c] = inf.grupos;
   assert.equal(a.id, 'A');
-  assert.equal(a.ordenes, 3);
-  assert.equal(a.compradores, 2);              // v1 compró dos veces; la orden sin visitante cuenta aparte
+  assert.equal(a.ordenes, 2);
+  assert.equal(a.compradores, 1);              // v1 compró dos veces; la orden inferida queda afuera
   assert.equal(a.inferidas, 1);
-  assert.equal(a.ingreso, 170996.2);
-  assert.equal(a.unidades, 4);
-  assert.equal(a.conversion, 2 / 1000);
-  assert.equal(a.rpv, 170996.2 / 1000);
+  assert.equal(a.ingreso, 125997.2);
+  assert.equal(a.unidades, 3);
+  assert.equal(a.conversion, 1 / 1000);
+  assert.equal(a.rpv, 125997.2 / 1000);
   assert.equal(a.vsControl, null);
   assert.equal(b.tasaCarrito, 90 / 990);
   assert.ok(b.vsControl.probConversion >= 0 && b.vsControl.probConversion <= 1);
@@ -59,4 +59,13 @@ test('CSV', () => {
   assert.equal(csv[0], 'grupo,precio,visitantes,agregaron,fueron_checkout,iniciaron_checkout,compradores,ordenes,inferidas,unidades,ingreso,conversion,rpv,prob_rpv,prob_conversion');
   assert.equal(csv.length, 4);
   assert.match(csv[1], /^A,44999,1000,/);
+});
+
+test('órdenes inferidas (sin atributos) no entran en conversión ni ingreso', () => {
+  const inf = armarInforme(datos, AB.CONFIG);
+  const a = inf.grupos[0];
+  assert.equal(a.inferidas, 1);
+  assert.equal(a.ordenes, 2);
+  assert.equal(a.compradores, 1);
+  assert.equal(a.ingreso, 125997.2);
 });

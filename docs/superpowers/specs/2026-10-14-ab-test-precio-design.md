@@ -351,6 +351,9 @@ solo grupo.
 - Si alguien edita a mano el atributo o la variante del carrito podría comprar a otro
   precio del test; nunca a uno fuera de los tres.
 - Con poco tráfico, el test solo detecta diferencias grandes.
+- `/api/ab/event` es público: los eventos de la web solo se aceptan si coinciden con la
+  cookie `pr_ab` del que los manda; los del checkout (pixel) no llevan cookie. Para frenar
+  inundaciones conviene una regla de rate limit en el Firewall de Vercel.
 - Si se activa un banner de consentimiento en Shopify, el pixel depende del
   consentimiento y el embudo del checkout puede subcontarse; las órdenes no se pierden
   porque llegan por webhook.
