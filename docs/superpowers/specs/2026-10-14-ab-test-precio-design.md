@@ -155,14 +155,17 @@ Visitante ──► middleware.js ── sortea grupo, cookie pr_ab (servidor)
   los copia a la orden (`customAttributes`). Ya verificado: `cartCreate` los acepta.
 - Si `cartCreate` falla con la variante del grupo, se muestra el error actual y se
   registra `error_checkout`. No se cae a la variante de A: cambiaría el precio sin aviso.
-- Webhook `orders/create` → `/api/ab/order`:
+- Webhooks `orders/create` y `orders/updated` → `/api/ab/order`:
   1. Verifica la firma HMAC de Shopify.
-  2. Lee el grupo de los atributos; si faltan, lo deduce de las variantes compradas
-     (pack o duplicado → su grupo; original → A, marcado como `inferido`).
-  3. Agrega el tag `ab-precio1-<grupo>` a la orden.
-  4. Guarda la orden en `ab_orders` (idempotente por ID de orden).
-  5. Solo con duplicados: descuenta del original las unidades vendidas.
-  Si falla, Shopify reintenta; el informe además relee las órdenes desde Shopify.
+  2. Lee el grupo de los atributos; si faltan, lo deduce del precio unitario de las
+     líneas (44.999 → A, 47.749 → B, 49.999 → C), marcado como `inferido`.
+  3. Agrega el tag `ab-precio1-<grupo>` a la orden (y `ab-qa` / `ab-inferido` si
+     corresponde), sin repetir tags que ya tenga.
+  4. Guarda o actualiza la orden en `ab_orders` (una fila por ID de orden). Con
+     `orders/updated`, cancelaciones y reembolsos quedan reflejados en la base.
+  5. Solo con duplicados y solo en `orders/create`: descuenta del original las
+     unidades vendidas.
+  Si falla, Shopify reintenta; todo es idempotente.
 - Descuentos: AHORROPACK, AHORRO15%, el código FOCUS10 y "Envio Gratis" están
   configurados para todos los productos (verificado), así que aplican igual en los tres
   grupos. El paso 0 confirma que también aplican sobre el pack.
@@ -189,6 +192,7 @@ create table ab_events (
   qty         int,
   value       numeric(12,2),
   order_id    text,
+  detail      text,          -- botón de origen o detalle del error
   source      text,          -- utm_source o dominio del referrer
   medium      text,
   campaign    text,
@@ -203,17 +207,18 @@ create table ab_orders (
   order_id      text primary key,
   order_name    text,
   created_at    timestamptz not null,
+  updated_at    timestamptz not null default now(),
   test          text not null,
   grp           text not null,
   visitor       text,
   inferred      boolean not null default false,
+  qa            boolean not null default false,  -- compra de prueba (_ab_qa)
   units         int not null,
-  subtotal      numeric(12,2) not null,
+  subtotal      numeric(12,2) not null,          -- antes de descuentos
   discounts     numeric(12,2) not null,
-  total         numeric(12,2) not null,
+  total         numeric(12,2) not null,          -- mercadería neta de descuentos y reembolsos
   discount_codes text[],
-  status        text not null, -- paid | pending | cancelled | refunded | partially_refunded
-  excluded      text
+  status        text not null  -- paid | pending | cancelled | refunded | partially_refunded
 );
 ```
 
@@ -273,8 +278,11 @@ Contenido: una columna por grupo, excluyendo `internal` y `qa`:
   página muestra una alarma (asignación rota).
 - Alarmas de `error_precio`, `error_config` y `error_checkout`.
 - Cortes por dispositivo y por origen del tráfico. Exportación a CSV.
-- Ingreso: total de la orden menos reembolsos, sin canceladas. Al generar el informe
-  se releen de Shopify las órdenes del test para tener estados frescos.
+- Ingreso: mercadería neta de descuentos y reembolsos (`current_subtotal_price`), sin
+  envío (no depende del grupo) y sin órdenes canceladas. El estado se mantiene al día
+  con el webhook `orders/updated`.
+- Exclusión: un visitante con cualquier evento marcado `internal`/`qa`, o con una
+  orden `qa`, queda fuera de todas las métricas.
 - Ganancia por visitante queda fuera por ahora; se agrega cargando el costo por pote
   en la config.
 
