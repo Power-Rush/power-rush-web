@@ -202,8 +202,28 @@ async function estado() {
   console.log('\nWebhooks:', webhookSubscriptions.nodes.map((w) => `${w.topic} → ${w.uri}`).join('; ') || 'ninguno');
 }
 
+const M_WEBHOOK = `mutation Webhook($topic: WebhookSubscriptionTopic!, $sub: WebhookSubscriptionInput!) {
+  webhookSubscriptionCreate(topic: $topic, webhookSubscription: $sub) {
+    webhookSubscription { id topic uri }
+    userErrors { field message }
+  }
+}`;
+
+async function webhooks() {
+  const { webhookSubscriptions } = await adminGql(Q_WEBHOOKS);
+  for (const topic of ['ORDERS_CREATE', 'ORDERS_UPDATED']) {
+    if (webhookSubscriptions.nodes.some((w) => w.topic === topic && w.uri === WEBHOOK_URI)) {
+      console.log(topic, 'ya estaba');
+      continue;
+    }
+    const r = sinErrores((await adminGql(M_WEBHOOK, { topic, sub: { uri: WEBHOOK_URI, format: 'JSON' } })).webhookSubscriptionCreate,
+      'webhookSubscriptionCreate');
+    console.log(topic, '→', r.webhookSubscription.uri);
+  }
+}
+
 const [comando, arg] = process.argv.slice(2);
-const comandos = { spike, borrar: () => borrar(arg), estado };
+const comandos = { spike, borrar: () => borrar(arg), webhooks, estado };
 if (!comandos[comando]) {
   console.error('Comandos: ' + Object.keys(comandos).join(', '));
   process.exit(1);
