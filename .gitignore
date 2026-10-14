@@ -2,3 +2,5 @@
 .DS_Store
 .claude/
 .vercel
+.env
+.env*.local
