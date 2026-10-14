@@ -4,5 +4,13 @@
   "redirects": [
     { "source": "/product.html", "destination": "/products/powerrush", "permanent": true },
     { "source": "/product", "destination": "/products/powerrush", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/app",
+      "headers": [
+        { "key": "Content-Security-Policy", "value": "frame-ancestors https://6q1n8a-jw.myshopify.com https://admin.shopify.com;" }
+      ]
+    }
   ]
 }
