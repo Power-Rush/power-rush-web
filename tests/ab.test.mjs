@@ -107,3 +107,72 @@ test('cuerpo del evento', () => {
     f: 'bf', q: 2, val: null, d: 'producto', src: 'meta', med: 'paid', cmp: null,
   });
 });
+
+function ventanaFalsa(cookie, search = '') {
+  const beacons = [];
+  const elementos = [];
+  const almacen = {};
+  const doc = {
+    cookie, referrer: '',
+    head: { appendChild() {} },
+    documentElement: {},
+    createElement: () => ({ textContent: '' }),
+    querySelectorAll: () => elementos,
+    addEventListener() {},
+  };
+  const win = {
+    document: doc,
+    location: { search, pathname: '/', hostname: 'www.powerrush.com.ar' },
+    sessionStorage: { getItem: (k) => almacen[k] ?? null, setItem: (k, v) => { almacen[k] = String(v); } },
+    crypto: globalThis.crypto,
+    navigator: { sendBeacon: (url, blob) => { beacons.push({ url, blob }); return true; } },
+    Blob,
+    MutationObserver: class { observe() {} disconnect() {} },
+  };
+  return { win, beacons, elementos };
+}
+function elemento(attrs) {
+  return {
+    attrs: { ...attrs }, textContent: '',
+    getAttribute(k) { return this.attrs[k] ?? null; },
+    setAttribute(k, v) { this.attrs[k] = String(v); },
+    hasAttribute(k) { return k in this.attrs; },
+  };
+}
+
+test('boot: expone PR_AB, pinta precios y manda la vista', async () => {
+  const { win, beacons } = ventanaFalsa('pr_ab=precio1.B.0123456789abcdef');
+  AB.boot(win);
+  const ab = win.PR_AB;
+  assert.equal(ab.grupo, 'B');
+  assert.equal(ab.precio, 47749);
+  assert.equal(ab.total(2), 85948.2);
+  assert.equal(ab.variantes, CONFIG.grupos.B.variantes);
+  const el = elemento({ 'data-ab-precio': 'cu', 'data-ab-n': '3' });
+  ab.pintar(el);
+  assert.equal(el.textContent, '$40.587');
+  assert.ok('data-ab-ok' in el.attrs);
+  assert.equal(beacons.length, 1);
+  assert.equal(beacons[0].url, '/api/ab/event');
+  const cuerpo = JSON.parse(await beacons[0].blob.text());
+  assert.equal(cuerpo.e, 'vista');
+  assert.equal(cuerpo.g, 'B');
+  assert.match(cuerpo.s, /^[a-f0-9]{16}$/);
+});
+
+test('boot: sin cookie no manda eventos ni atributos', () => {
+  const { win, beacons } = ventanaFalsa('', '?ab=c');
+  AB.boot(win);
+  assert.equal(win.PR_AB.grupo, 'C');
+  win.PR_AB.track('agregar_carrito', { sabor: 'bf', cantidad: 1 });
+  assert.equal(beacons.length, 0);
+  assert.deepEqual(win.PR_AB.atributos(), []);
+});
+
+test('boot: cookie con grupo inexistente usa el control y registra error_config', async () => {
+  const { win, beacons } = ventanaFalsa('pr_ab=precio1.Z.0123456789abcdef');
+  AB.boot(win);
+  assert.equal(win.PR_AB.grupo, 'A');
+  const eventos = await Promise.all(beacons.map(async (b) => JSON.parse(await b.blob.text()).e));
+  assert.deepEqual(eventos.sort(), ['error_config', 'vista']);
+});

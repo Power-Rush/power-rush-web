@@ -107,7 +107,87 @@
     };
   }
 
-  function boot() {}   // Task 6
+  function idAleatorio(win, bytes) {
+    var a = new Uint8Array(bytes);
+    win.crypto.getRandomValues(a);
+    return Array.prototype.map.call(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+  }
+
+  /* Sesión y origen del tráfico: se fijan en la primera página de la sesión. */
+  function sesionYOrigen(win) {
+    var ss = null;
+    try { ss = win.sessionStorage; } catch (e) { ss = null; }
+    var s = ss && ss.getItem('pr_ab_s');
+    var o = ss && ss.getItem('pr_ab_o');
+    if (!s) { s = idAleatorio(win, 8); try { ss.setItem('pr_ab_s', s); } catch (e) {} }
+    if (!o) {
+      o = JSON.stringify(origenDe(win.location.search, win.document.referrer, win.location.hostname));
+      try { ss.setItem('pr_ab_o', o); } catch (e) {}
+    }
+    return { sesion: s, origen: JSON.parse(o) };
+  }
+
+  function boot(win) {
+    var doc = win.document;
+    var r = resolver(doc.cookie, win.location.search);
+    var g = CONFIG.grupos[r.grupo];
+    var ctx = sesionYOrigen(win);
+
+    function track(evento, datos) {
+      if (!r.registra) return;
+      ctx.path = win.location.pathname;
+      var json = JSON.stringify(payload(r, evento, datos, ctx));
+      try {
+        if (win.navigator.sendBeacon && win.navigator.sendBeacon('/api/ab/event', new win.Blob([json], { type: 'text/plain' }))) return;
+      } catch (e) {}
+      try { win.fetch('/api/ab/event', { method: 'POST', body: json, keepalive: true, headers: { 'Content-Type': 'text/plain' } }); } catch (e) {}
+    }
+
+    /* Los precios quedan ocultos hasta que se pintan: nunca se ve uno y después otro. */
+    var estilo = doc.createElement('style');
+    estilo.textContent = '[data-ab-precio]:not([data-ab-ok]){visibility:hidden}';
+    doc.head.appendChild(estilo);
+
+    function pintar(el) {
+      var t = texto(el.getAttribute('data-ab-precio'), g.precio, parseInt(el.getAttribute('data-ab-n'), 10) || 1);
+      if (t != null) el.textContent = t;
+      el.setAttribute('data-ab-ok', '');
+    }
+    function pintarDentro(raiz) {
+      var els = raiz.querySelectorAll('[data-ab-precio]');
+      for (var i = 0; i < els.length; i++) pintar(els[i]);
+    }
+    /* Pinta cada precio apenas el parser lo agrega, antes del primer dibujo. Los elementos
+       de precio vienen vacíos en el HTML, así que el parser no les agrega texto después. */
+    var mo = new win.MutationObserver(function (cambios) {
+      for (var i = 0; i < cambios.length; i++) {
+        var nodos = cambios[i].addedNodes;
+        for (var j = 0; j < nodos.length; j++) {
+          var n = nodos[j];
+          if (n.nodeType !== 1) continue;
+          if (n.hasAttribute('data-ab-precio')) pintar(n);
+          if (n.firstElementChild) pintarDentro(n);
+        }
+      }
+    });
+    mo.observe(doc.documentElement, { childList: true, subtree: true });
+    doc.addEventListener('DOMContentLoaded', function () { pintarDentro(doc); mo.disconnect(); });
+
+    win.PR_AB = {
+      test: CONFIG.test, grupo: r.grupo, visitante: r.visitante, qa: r.qa, registra: r.registra,
+      precio: g.precio, variantes: g.variantes,
+      pct: pct,
+      total: function (n) { return total(g.precio, n); },
+      porUnidad: function (n) { return porUnidad(g.precio, n); },
+      money: money,
+      pintar: pintar,
+      track: track,
+      atributos: function () { return atributosCarrito(r); }
+    };
+
+    track('vista');
+    if (r.error) track('error_config', { detalle: r.error });
+  }
 
   return {
     CONFIG: CONFIG, pct: pct, total: total, porUnidad: porUnidad, porPorcion: porPorcion, money: money,
