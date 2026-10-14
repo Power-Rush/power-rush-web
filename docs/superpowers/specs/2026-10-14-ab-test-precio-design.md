@@ -306,6 +306,8 @@ comprobar:
 
 Si falla cualquiera de los cinco, se usan duplicados.
 
+Decisión del paso 0 (2026-10-14): **pack**. Shopify acepta el pack de 1 unidad (con precio fijo vía `priceInput: FIXED`), el checkout muestra "Blue Fizz" a $47.749 sin tachado ni descuento, AHORROPACK aplica y la compra de prueba descontó stock del original.
+
 **Antes de arrancar:** compra real en cada grupo con `?ab=A|B|C` (después se
 reembolsa): precio en web y checkout, tag, fila en la base, stock. Verificar que el
 precio nunca parpadea (captura en carga lenta) y que la cookie sobrevive en Safari.
