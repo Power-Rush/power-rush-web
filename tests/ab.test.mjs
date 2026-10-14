@@ -176,3 +176,14 @@ test('boot: cookie con grupo inexistente usa el control y registra error_config'
   const eventos = await Promise.all(beacons.map(async (b) => JSON.parse(await b.blob.text()).e));
   assert.deepEqual(eventos.sort(), ['error_config', 'vista']);
 });
+
+test('config completa: cada grupo tiene variante para los dos sabores', () => {
+  const ids = [];
+  for (const [g, grupo] of Object.entries(CONFIG.grupos)) {
+    for (const s of ['bf', 'cp']) {
+      assert.match(String(grupo.variantes[s]), /^gid:\/\/shopify\/ProductVariant\/\d+$/, `${g}.${s}`);
+      ids.push(grupo.variantes[s]);
+    }
+  }
+  assert.equal(new Set(ids).size, ids.length, 'ninguna variante repetida entre grupos');
+});

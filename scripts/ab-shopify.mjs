@@ -222,8 +222,43 @@ async function webhooks() {
   }
 }
 
+const M_PRECIO = `mutation PrecioControl($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+  productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+    productVariants { id price }
+    userErrors { field message }
+  }
+}`;
+
+async function catalogo(modo) {
+  const resultado = {};
+  for (const g of Object.keys(CONFIG.grupos)) {
+    if (g === CONFIG.control) continue;
+    const { products } = await adminGql(Q_POR_TAG, { q: `tag:ab-${CONFIG.test}-${g}` });
+    if (products.nodes.length) throw new Error(`Ya existe el producto del grupo ${g} (${products.nodes[0].id}). Borralo antes de recrearlo.`);
+    resultado[g] = (await crearProductoGrupo(g, modo)).variantes;
+    console.log(`Grupo ${g} listo.`);
+  }
+  console.log('\nPegá esto en CONFIG.grupos de ab.js (variantes de cada grupo):');
+  console.log(JSON.stringify(resultado, null, 2));
+}
+
+async function precioControl() {
+  const grupo = CONFIG.grupos[CONFIG.control];
+  const variants = SABORES.map((s) => ({ id: grupo.variantes[s], price: grupo.precio }));
+  const r = sinErrores((await adminGql(M_PRECIO, { productId: PRODUCTO_ORIGINAL, variants })).productVariantsBulkUpdate,
+    'productVariantsBulkUpdate');
+  for (const v of r.productVariants) console.log(`${v.id} → $${v.price}`);
+}
+
 const [comando, arg] = process.argv.slice(2);
-const comandos = { spike, borrar: () => borrar(arg), webhooks, estado };
+const comandos = {
+  spike,
+  borrar: () => borrar(arg),
+  catalogo: () => catalogo(arg),
+  'precio-control': precioControl,
+  webhooks,
+  estado,
+};
 if (!comandos[comando]) {
   console.error('Comandos: ' + Object.keys(comandos).join(', '));
   process.exit(1);

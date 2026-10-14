@@ -21,8 +21,8 @@
     porciones: 30,
     grupos: {
       A: { precio: 44999, peso: 1, variantes: { bf: 'gid://shopify/ProductVariant/50221562495224', cp: 'gid://shopify/ProductVariant/50221562462456' } },
-      B: { precio: 47749, peso: 1, variantes: { bf: null, cp: null } },   // Task 4 completa los IDs
-      C: { precio: 49999, peso: 1, variantes: { bf: null, cp: null } }
+      B: { precio: 47749, peso: 1, variantes: { bf: 'gid://shopify/ProductVariant/67671939612920', cp: 'gid://shopify/ProductVariant/67671939645688' } },
+      C: { precio: 49999, peso: 1, variantes: { bf: 'gid://shopify/ProductVariant/67671940661496', cp: 'gid://shopify/ProductVariant/67671940694264' } }
     }
   };
 
