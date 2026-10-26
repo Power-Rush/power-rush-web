@@ -493,14 +493,13 @@
     .fdr-name { font-family: var(--hd); font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: .4px; }
     .fdr-role { font-family: var(--mo); font-size: 11.5px; letter-spacing: 1.6px; text-transform: uppercase; color: rgba(238,245,238,.6); }
     /* Nota de foto: solo se ve en dev, marca qué hay que fotografiar */
-    .fdr-shot { margin-top: 10px; font-family: var(--mo); font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,209,0,.7); }
 
     /* F1 · Retrato a sangre */
     .fdr1 { display: grid; grid-template-columns: .82fr 1fr; gap: 0; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg3); }
     .fdr1-img { position: relative; min-height: 460px; overflow: hidden; }
     .fdr1-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
     /* Tratamiento de color: overlay verde en multiply + degradado, como pide el manual de la web */
-    .fdr1-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 40%, var(--bg3)), linear-gradient(to top, rgba(0,212,122,.14), transparent 60%); }
+    .fdr1-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 80%, var(--bg3)), linear-gradient(to top, rgba(0,212,122,.14), transparent 60%); }
     .fdr1-txt { padding: 46px 48px; display: flex; flex-direction: column; justify-content: center; }
 
     /* F2 · Carta firmada */
@@ -1506,7 +1505,7 @@
     <div id="founder" class="rv d2" style="margin: 72px 0 84px;">
     <div class="fv fv-1 show">
       <div class="fdr1">
-        <div class="fdr1-img"><img src="https://placehold.co/900x1200/0C100C/00D47A?text=FOTO%201%20%C2%B7%20RETRATO%20VERTICAL%203%3A4" alt="Fundador de Power Rush"></div>
+        <div class="fdr1-img"><img src="/assets/founder-felipe.jpg" width="1200" height="1600" loading="lazy" alt="Felipe, fundador de Power Rush, en su setup con un pote de Blue Fizz y uno de Cherry Pop"></div>
         <div class="fdr1-txt">
           <div class="fdr-eyebrow">Quién está detrás</div>
           <h3 class="fdr-t">Lo hice para mí.<br><em>Resultó que éramos muchos.</em></h3>
@@ -1518,7 +1517,6 @@
             <span class="fdr-name">Felipe</span>
             <span class="fdr-role">Fundador · Power Rush</span>
           </div>
-          <div class="fdr-shot">Foto: retrato vertical 3:4 · medio cuerpo, mirando a cámara, en el setup · luz baja, fondo oscuro</div>
         </div>
       </div>
     </div>
