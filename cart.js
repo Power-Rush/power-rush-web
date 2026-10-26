@@ -33,12 +33,12 @@
      la página sigue con los valores locales de fallback. */
   var LIVE = { ready: false, stock: {} }; // stock[id] = { avail: bool, qty: number|null }
 
-  function gql(query, cb) {
+  function gql(query, cb, variables) {
     try {
       fetch('https://' + SHOPIFY.domain + '/api/' + SHOPIFY.api + '/graphql.json', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Shopify-Storefront-Access-Token': SHOPIFY.token },
-        body: JSON.stringify({ query: query })
+        body: JSON.stringify({ query: query, variables: variables || {} })
       }).then(function (r) { return r.json(); }).then(cb).catch(function () { cb(null); });
     } catch (e) { cb(null); }
   }
@@ -54,35 +54,49 @@
   function soldOut(id) { var s = LIVE.stock[id]; return !!s && s.avail === false; }
   function maxFor(id) { var q = stockOf(id); return q == null ? Infinity : q; }
   function totalQty() { var s = 0; ORDER.forEach(function (id) { s += qtyOf(id); }); return s; }
-  var BASE_FALLBACK = 24999;                        // precio de 1 pote si Shopify todavía no respondió
-  function base() {                                 // el precio de Shopify manda cuando existe
-    var p = PRODUCTS.bf.price || PRODUCTS.cp.price;
-    return p > 0 ? p : BASE_FALLBACK;
-  }
-  function unitPrice(tq) {
-    tq = (tq == null) ? totalQty() : tq;
-    var b = base();
-    return tq >= 3 ? Math.round(b * 0.85) : tq === 2 ? Math.round(b * 0.9) : b;
-  }
-  function subtotal() { var tq = totalQty(); return unitPrice(tq) * tq; }
+  /* Precio y descuentos del test A/B: salen de /ab.js (window.PR_AB), que fija el grupo del
+     visitante antes de que cargue la página. Sin ab.js: precio de Shopify, sin descuento. */
+  function AB() { return window.PR_AB || null; }
+  function base() { var ab = AB(); return ab ? ab.precio : (PRODUCTS.bf.price || PRODUCTS.cp.price || 0); }
+  /* Con el test activo, solo la variante del grupo: caer a la de A cambiaría el precio sin avisar. */
+  function variante(id) { var ab = AB(); return ab ? ab.variantes[id] : SHOPIFY.variants[id]; }
+  function track(evento, datos) { var ab = AB(); if (ab) ab.track(evento, datos); }
+  function discPct(tq) { tq = (tq == null) ? totalQty() : tq; var ab = AB(); return ab ? ab.pct(tq) : 0; }
+  function subtotal(tq) { tq = (tq == null) ? totalQty() : tq; var ab = AB(); return ab ? ab.total(tq) : base() * tq; }
+  function unitPrice(tq) { tq = (tq == null) ? totalQty() : tq; return tq > 0 ? subtotal(tq) / tq : base(); }
   function baseTotal() { return base() * totalQty(); }
   function savings() { return baseTotal() - subtotal(); }
-  function discPct() { var tq = totalQty(); return tq >= 3 ? 15 : tq === 2 ? 10 : 0; }
   function savePct() { var b = baseTotal(); return b > 0 ? Math.round(savings() / b * 100) : 0; }
-  function money(n) { return '$' + Math.round(n).toLocaleString('es-AR'); }
+  function money(n) { var ab = AB(); return ab ? ab.money(n) : '$' + Math.round(n).toLocaleString('es-AR'); }
   // próximo escalón de beneficio: qué desbloquea sumar 1 pote más
   function nextTier() {
     var tq = totalQty();
     if (tq >= 3) return null;                              // máximo descuento alcanzado
-    if (tq === 2) return { pct: 15, ship: false };         // 3 potes → −15%
-    return { pct: 10, ship: true };                        // 2 potes → −10% + envío gratis
+    if (tq === 2) return { pct: 10, ship: false };         // 3 potes → −10% (ya tiene envío gratis)
+    return { pct: 0, ship: true };                         // 2 potes → envío gratis
   }
 
   /* ---- Acciones ---------------------------------------------------------- */
-  function add(id, q) {
+  function add(id, q, origen) {
     if (!PRODUCTS[id] || soldOut(id)) return;
     q = q || 1;
     setQty(id, qtyOf(id) + q);
+    track('agregar_carrito', { sabor: id, cantidad: q, detalle: origen || 'pagina' });
+    open(); pulse();
+  }
+  /* Combo de la página de producto: varios sabores de una vez y un solo evento. */
+  function addCombo(sabores, origen) {
+    var total = 0, detalle = [];
+    ORDER.forEach(function (id) {
+      var q = sabores[id] || 0;
+      if (!q || !PRODUCTS[id] || soldOut(id)) return;
+      state[id] = Math.min(qtyOf(id) + q, maxFor(id));
+      total += q;
+      detalle.push(id + '×' + q);
+    });
+    if (!total) return;
+    save(); render();
+    track('agregar_carrito', { cantidad: total, detalle: (origen || 'pagina') + ' combo ' + detalle.join(' ') });
     open(); pulse();
   }
   function setQty(id, q) {
@@ -212,7 +226,7 @@
     var upsell = '';
     if (tier) {
       var benefit = tier.ship
-        ? '<b>−' + tier.pct + '% + envío gratis</b>'
+        ? '<b>envío gratis</b>'
         : '<b>−' + tier.pct + '% de descuento</b>';
       var bolt = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13z"/></svg>';
       upsell =
@@ -235,7 +249,7 @@
       upsell =
         '<div class="pr-maxed">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
-          'Máximo descuento activado · −15%' +
+          'Envío gratis + −10% activados' +
         '</div>';
     }
 
@@ -319,41 +333,58 @@
     var btn = foot.querySelector('[data-pr-checkout]');
     checkout.busy = true;
     if (btn) { btn.classList.add('loading'); btn.textContent = 'Preparando tu pedido…'; }
+    track('clic_comprar', { cantidad: totalQty(), valor: subtotal() });
 
-    var lines = ORDER.filter(function (id) { return qtyOf(id) > 0 && SHOPIFY.variants[id]; })
-      .map(function (id) { return '{merchandiseId:"' + SHOPIFY.variants[id] + '",quantity:' + qtyOf(id) + '}'; });
+    var sinVariante = ORDER.filter(function (id) { return qtyOf(id) > 0 && !variante(id); });
+    if (sinVariante.length) { return fallaCheckout(btn, 'sin variante del grupo para ' + sinVariante.join(', ')); }
+
+    var input = {
+      lines: ORDER.filter(function (id) { return qtyOf(id) > 0; })
+        .map(function (id) { return { merchandiseId: variante(id), quantity: qtyOf(id) }; }),
+      attributes: AB() ? AB().atributos() : []
+    };
     var code = discountCode();
-    var input = 'lines:[' + lines.join(',') + ']' + (code ? ',discountCodes:["' + code.replace(/"/g, '') + '"]' : '');
+    if (code) input.discountCodes = [code];
 
-    gql('mutation{cartCreate(input:{' + input + '}){cart{checkoutUrl} userErrors{message}}}', function (res) {
-      var url = res && res.data && res.data.cartCreate && res.data.cartCreate.cart &&
-                res.data.cartCreate.cart.checkoutUrl;
+    gql('mutation Crear($input: CartInput!){cartCreate(input:$input){cart{checkoutUrl} userErrors{message}}}', function (res) {
+      var data = res && res.data && res.data.cartCreate;
+      var url = data && data.cart && data.cart.checkoutUrl;
       if (url) { window.location.href = url; return; }
-      checkout.busy = false;
-      if (btn) { btn.classList.remove('loading'); btn.textContent = 'Comprar'; }
-      alert('No pudimos abrir el checkout. Probá de nuevo en unos segundos.');
-    });
+      fallaCheckout(btn, data && data.userErrors && data.userErrors.length
+        ? data.userErrors.map(function (u) { return u.message; }).join('; ')
+        : 'sin respuesta de Shopify');
+    }, { input: input });
+  }
+
+  function fallaCheckout(btn, detalle) {
+    track('error_checkout', { detalle: detalle });
+    checkout.busy = false;
+    if (btn) { btn.classList.remove('loading'); btn.textContent = 'Comprar'; }
+    alert('No pudimos abrir el checkout. Probá de nuevo en unos segundos.');
   }
 
   /* ---- Sync con Shopify: precio, stock e imágenes ------------------------ */
   function syncCatalog() {
-    var ids = ORDER.filter(function (id) { return SHOPIFY.variants[id]; })
-      .map(function (id) { return '"' + SHOPIFY.variants[id] + '"'; });
+    var ids = [];
+    ORDER.forEach(function (id) {
+      if (SHOPIFY.variants[id]) ids.push(SHOPIFY.variants[id]);
+      if (variante(id) && ids.indexOf(variante(id)) < 0) ids.push(variante(id));
+    });
     if (!ids.length) return;
 
-    gql('{nodes(ids:[' + ids.join(',') + ']){... on ProductVariant{id title availableForSale quantityAvailable ' +
-        'price{amount} image{url} product{featuredImage{url}}}}}', function (res) {
+    gql('query Catalogo($ids:[ID!]!){nodes(ids:$ids){... on ProductVariant{id availableForSale quantityAvailable price{amount} image{url}}}}', function (res) {
       var nodes = res && res.data && res.data.nodes;
       if (!nodes) return;                                   // sin respuesta: se queda el fallback local
+      var porId = {};
+      nodes.forEach(function (n) { if (n && n.id) porId[n.id] = n; });
+      revisarPrecios(porId);
 
-      var byVariant = {};
-      ORDER.forEach(function (id) { byVariant[SHOPIFY.variants[id]] = id; });
-
+      /* Stock y fotos salen siempre de las variantes originales: el pack comparte su
+         stock y el duplicado no lo controla. */
       var priced = 0, found = [];
-      nodes.forEach(function (n) {
-        if (!n || !n.id) return;
-        var id = byVariant[n.id];
-        if (!id) return;
+      ORDER.forEach(function (id) {
+        var n = porId[SHOPIFY.variants[id]];
+        if (!n) return;
         found.push({ id: id, n: n });
         var img = n.image && n.image.url;                   // solo la foto de la variante, no la del producto
         if (img) PRODUCTS[id].img = img + (img.indexOf('?') > -1 ? '&' : '?') + 'width=420';
@@ -381,13 +412,24 @@
       save();
       paintStock();
       render();
+    }, { ids: ids });
+  }
+
+  /* Lo que cobra Shopify tiene que ser el precio del grupo; si no, la config del test está mal. */
+  function revisarPrecios(porId) {
+    var ab = AB();
+    if (!ab) return;
+    ORDER.forEach(function (id) {
+      var n = porId[variante(id)];
+      var amount = n && n.price && parseFloat(n.price.amount);
+      if (amount > 0 && Math.abs(amount - ab.precio) > 0.005) {
+        track('error_precio', { sabor: id, valor: amount, detalle: 'Shopify $' + amount + ' / config $' + ab.precio + ' (grupo ' + ab.grupo + ')' });
+      }
     });
   }
 
-  /* Fotos y precio base tal como están cargados en Shopify. */
+  /* Fotos tal como están cargadas en Shopify. Los precios los pinta /ab.js. */
   function paintPhotos() {
-    var px = document.querySelectorAll('[data-pr-price]');
-    for (var p = 0; p < px.length; p++) px[p].textContent = money(base());
 
     var im = document.querySelectorAll('[data-pr-photo]');
     for (var k = 0; k < im.length; k++) {
@@ -423,14 +465,19 @@
   /* ---- Wiring global de botones de "agregar" / "abrir" ------------------- */
   document.addEventListener('click', function (e) {
     var addEl = e.target.closest('[data-pr-add]');
-    if (addEl) { e.preventDefault(); add(addEl.getAttribute('data-pr-add'), parseInt(addEl.getAttribute('data-pr-qty'), 10) || 1); return; }
+    if (addEl) {
+      e.preventDefault();
+      add(addEl.getAttribute('data-pr-add'), parseInt(addEl.getAttribute('data-pr-qty'), 10) || 1,
+        drawer && drawer.contains(addEl) ? 'carrito' : 'pagina');
+      return;
+    }
     var openEl = e.target.closest('[data-pr-open]');
-    if (openEl) { e.preventDefault(); open(); }
+    if (openEl) { e.preventDefault(); open(); track('abrir_carrito'); }
   });
 
   /* ---- API pública ------------------------------------------------------- */
   window.PowerCart = {
-    add: add, open: open, close: close, remove: remove,
+    add: add, addCombo: addCombo, open: open, close: close, remove: remove,
     setQty: setQty, count: totalQty, subtotal: subtotal,
     unitPrice: unitPrice, money: money,
     stock: function (id) { return LIVE.stock[id] || null; },

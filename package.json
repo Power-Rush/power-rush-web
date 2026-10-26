@@ -1,0 +1,12 @@
+{
+  "name": "power-rush-web",
+  "private": true,
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "ab:shopify": "node --env-file-if-exists=.env.local scripts/ab-shopify.mjs",
+    "ab:db": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.vercel.local scripts/ab-db.mjs"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "1.1.0"
+  }
+}

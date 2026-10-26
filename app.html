@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="shopify-api-key" content="3864182d8cf8df067fb0e1d5df5a6044">
+  <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
+  <script src="https://cdn.shopify.com/shopifycloud/polaris-1.js"></script>
+  <title>Power Rush AB</title>
+</head>
+<body>
+  <s-page heading="Test de precio">
+    <s-button slot="primary-action" id="csv">Descargar CSV</s-button>
+    <div id="alertas"></div>
+    <s-section heading="Resultados por grupo">
+      <div id="tabla"><s-spinner accessibilityLabel="Cargando"></s-spinner></div>
+    </s-section>
+    <s-section heading="Por dispositivo"><div id="dispositivo"></div></s-section>
+    <s-section heading="Por origen del tráfico"><div id="origen"></div></s-section>
+    <s-section heading="Cómo leerlo">
+      <s-paragraph>La métrica principal es el ingreso por visitante: un precio más alto baja la conversión, y lo que importa es cuánta plata deja cada persona que entra.</s-paragraph>
+      <s-paragraph>"Prob. de ganarle al control" arriba de 95% es una señal fuerte; cerca de 50% todavía no hay diferencia. No cortar antes de 2 semanas completas.</s-paragraph>
+      <s-text color="subdued">Excluye al equipo, las compras de prueba y los bots. Ingreso = mercadería neta de descuentos y reembolsos, sin envío.</s-text>
+    </s-section>
+  </s-page>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const pesos = (n) => n == null ? '—' : (n < 0 ? '−$' : '$') + Math.abs(Math.round(n)).toLocaleString('es-AR');
+    const pct = (n) => n == null ? '—' : (n * 100).toLocaleString('es-AR', { maximumFractionDigits: 2 }) + '%';
+    const num = (n) => n == null ? '—' : Number(n).toLocaleString('es-AR', { maximumFractionDigits: 2 });
+    const prob = (p) => p == null ? '—' : `<s-badge tone="${p >= 0.95 ? 'success' : p <= 0.05 ? 'critical' : 'neutral'}">${pct(p)}</s-badge>`;
+
+    function tabla(cabeceras, filas) {
+      return '<s-table><s-table-header-row>' +
+        cabeceras.map((c, i) => `<s-table-header${i ? ' format="numeric"' : ''}>${esc(c)}</s-table-header>`).join('') +
+        '</s-table-header-row><s-table-body>' +
+        filas.map((f) => '<s-table-row>' + f.map((c) => `<s-table-cell>${c}</s-table-cell>`).join('') + '</s-table-row>').join('') +
+        '</s-table-body></s-table>';
+    }
+    function banner(tono, titulo, texto) {
+      return `<s-banner tone="${tono}" heading="${esc(titulo)}"><s-paragraph>${esc(texto)}</s-paragraph></s-banner>`;
+    }
+
+    async function api(formato) {
+      const token = await shopify.idToken();
+      const res = await fetch('/api/ab/report' + (formato ? '?formato=' + formato : ''), { headers: { Authorization: 'Bearer ' + token } });
+      if (!res.ok) throw new Error('El informe respondió ' + res.status);
+      return res;
+    }
+
+    function render(inf) {
+      const G = inf.grupos;
+      const fila = (nombre, f) => [esc(nombre), ...G.map(f)];
+      $('tabla').innerHTML = tabla(
+        ['Métrica', ...G.map((g) => `${g.id}${g.id === inf.control ? ' (control)' : ''} · ${pesos(g.precio)}`)],
+        [
+          fila('Visitantes', (g) => num(g.visitantes)),
+          fila('Agregan al carrito', (g) => pct(g.tasaCarrito)),
+          fila('Van al checkout', (g) => pct(g.tasaCheckout)),
+          fila('Compran (conversión)', (g) => pct(g.conversion)),
+          fila('Órdenes', (g) => num(g.ordenes) + (g.inferidas ? ` (${g.inferidas} inferidas)` : '')),
+          fila('Unidades por orden', (g) => num(g.unidadesPorOrden)),
+          fila('Ticket promedio', (g) => pesos(g.ticket)),
+          fila('Ingreso', (g) => pesos(g.ingreso)),
+          fila('Ingreso por visitante', (g) => pesos(g.rpv)),
+          fila('Prob. de ganarle al control (ingreso por visitante)', (g) => g.vsControl ? prob(g.vsControl.probRpv) : '—'),
+          fila('Diferencia de ingreso por visitante (95%)', (g) => g.vsControl && g.vsControl.difRpv ? `${pesos(g.vsControl.difRpv[0])} a ${pesos(g.vsControl.difRpv[1])}` : '—'),
+          fila('Prob. de ganarle al control (conversión)', (g) => g.vsControl ? prob(g.vsControl.probConversion) : '—'),
+        ]);
+      const seg = (lista) => lista.length
+        ? tabla(['Grupo', 'Segmento', 'Visitantes', 'Conversión', 'Ingreso por visitante'],
+            lista.map((s) => [esc(s.grupo), esc(s.segmento), num(s.visitantes), pct(s.conversion), pesos(s.rpv)]))
+        : '<s-paragraph>Todavía no hay datos.</s-paragraph>';
+      $('dispositivo').innerHTML = seg(inf.porDispositivo);
+      $('origen').innerHTML = seg(inf.porOrigen);
+
+      const alertas = [];
+      if (inf.reparto.alarma) alertas.push(banner('critical', 'Reparto desparejo', 'Los visitantes no se reparten según los pesos del test (p = ' + inf.reparto.p.toExponential(1) + '). Revisar la asignación antes de sacar conclusiones.'));
+      const errores = Object.entries(inf.errores);
+      if (errores.length) alertas.push(banner('warning', 'Errores registrados', errores.map(([e, n]) => `${e}: ${n}`).join(' · ')));
+      $('alertas').innerHTML = alertas.join('');
+    }
+
+    api().then((r) => r.json()).then(render).catch((e) => {
+      $('tabla').innerHTML = banner('critical', 'No se pudo cargar el informe', e.message);
+    });
+
+    $('csv').addEventListener('click', async () => {
+      try {
+        const blob = await (await api('csv')).blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'ab-test-precio.csv';
+        a.click();
+      } catch (e) {
+        shopify.toast.show('No se pudo descargar el CSV', { isError: true });
+      }
+    });
+  </script>
+</body>
+</html>

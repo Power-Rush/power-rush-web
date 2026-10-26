@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/ab.js"></script>
   <title>Power Rush — Foco Sin Crash</title>
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -691,7 +692,7 @@
     .bl .p-tag { border-color: var(--blue); color: var(--blue); } .tr .p-tag { border-color: var(--cherry); color: var(--cherry); }
     .p-desc { font-size: 15px; color: rgba(238,245,238,.92); line-height: 1.7; margin-bottom: 28px; }
     .p-price { font-family: var(--hd); font-weight: 700; font-size: 38px; margin-bottom: 18px; }
-    .p-price span:not([data-pr-price]) { font-family: var(--mo); font-weight: 400; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--gray); }
+    .p-price span:not([data-ab-precio]) { font-family: var(--mo); font-weight: 400; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--gray); }
     .p-stock { font-family: var(--mo); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--yellow); margin-top: 10px; text-align: center; }
     .p-stock:empty { display: none; }
     .p-stock.pr-out-txt { color: var(--red); }
@@ -1039,7 +1040,7 @@
           <span class="p-tag">Aguante</span><span class="p-tag">Focus</span><span class="p-tag">Energía</span><span class="p-tag">Reacción</span>
         </div>
         <p class="p-desc">El sabor más fuerte de la línea: ácido, con carácter y que se siente. Para los que van a los sabores intensos, no a los tibios.</p>
-        <div class="p-price"><span data-pr-price>$24.999</span> <span>/ 30 porciones · 300g</span></div>
+        <div class="p-price"><span data-ab-precio="total"></span> <span>/ 30 porciones · 300g</span></div>
         <a href="#" class="btn-buy" data-pr-add="bf">COMPRAR BLUE FIZZ <span aria-hidden="true">→</span></a>
         <div class="p-stock" data-pr-stock="bf"></div>
       </div>
@@ -1055,7 +1056,7 @@
           <span class="p-tag">Aguante</span><span class="p-tag">Focus</span><span class="p-tag">Energía</span><span class="p-tag">Reacción</span>
         </div>
         <p class="p-desc">Cereza refrescante, suave y rica. Fácil de tomar todos los días. Para los que buscan un sabor rico sin que sea una bomba.</p>
-        <div class="p-price"><span data-pr-price>$24.999</span> <span>/ 30 porciones · 300g</span></div>
+        <div class="p-price"><span data-ab-precio="total"></span> <span>/ 30 porciones · 300g</span></div>
         <a href="#" class="btn-buy" data-pr-add="cp">COMPRAR CHERRY POP <span aria-hidden="true">→</span></a>
         <div class="p-stock" data-pr-stock="cp"></div>
       </div>
@@ -1321,7 +1322,7 @@
           <div class="cv1-cell sep c-lata "><span class="vm no" aria-label="No"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></span></div>
           <div class="cv1-cell sep c-pre "><span class="vm no" aria-label="No"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></span></div>
           <div class="cv1-cell feat"><span class="v-feat">Precio por porción</span></div>
-          <div class="cv1-cell sep c-pr tint"><span class="v-num">$800</span></div>
+          <div class="cv1-cell sep c-pr tint"><span class="v-num" data-ab-precio="porcion"></span></div>
           <div class="cv1-cell sep c-lata "><span class="v-num">$3.000</span></div>
           <div class="cv1-cell sep c-pre "><span class="v-num">$1.500</span></div>
         </div>
