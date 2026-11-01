@@ -76,6 +76,58 @@
     return { pct: 0, ship: true };                         // 2 potes → envío gratis
   }
 
+  /* ---- Omnisend: carrito abandonado --------------------------------------- */
+  var OMNISEND = {
+    productID: '10286359806200',
+    productURL: 'https://powerrush.com.ar/products/powerrush',
+    checkoutURL: 'https://powerrush.com.ar/',
+    items: {
+      bf: { variant: '50221562495224', title: 'Power Rush Blue Fizz', img: 'https://cdn.shopify.com/s/files/1/0847/8851/0968/files/BLUE_FIZZ_FRENTE_SOLO.png?v=1787583083' },
+      cp: { variant: '50221562462456', title: 'Power Rush Cherry Pop', img: 'https://cdn.shopify.com/s/files/1/0847/8851/0968/files/CHERRY_FRENTE_SOLO.png?v=1787583083' }
+    }
+  };
+  function cartIdOmnisend() {
+    var id = localStorage.getItem('pr_cart_id');
+    if (!id) { id = crypto.randomUUID(); localStorage.setItem('pr_cart_id', id); }
+    return id;
+  }
+  function itemOmnisend(id, cantidad) {
+    var it = OMNISEND.items[id];
+    return {
+      productID: OMNISEND.productID,
+      productVariantID: it.variant,
+      productTitle: it.title,
+      productQuantity: cantidad,
+      productPrice: unitPrice(),
+      productDiscount: 0,
+      productURL: OMNISEND.productURL,
+      productImageURL: it.img
+    };
+  }
+  /* Va después de actualizar el carrito, para que el total y los ítems incluyan lo agregado.
+     Si Omnisend falla, el carrito sigue funcionando. */
+  function enviarCarritoOmnisend(addedId, addedQty) {
+    try {
+      if (!(addedQty > 0)) return;
+      var lineItems = [];
+      ORDER.forEach(function (id) { if (qtyOf(id) > 0) lineItems.push(itemOmnisend(id, qtyOf(id))); });
+      window.omnisend = window.omnisend || [];
+      window.omnisend.push(['track', 'added product to cart', {
+        origin: 'api',
+        eventVersion: '',
+        eventID: crypto.randomUUID(),
+        properties: {
+          abandonedCheckoutURL: OMNISEND.checkoutURL,
+          cartID: cartIdOmnisend(),
+          currency: 'ARS',
+          value: subtotal(),
+          lineItems: lineItems,
+          addedItem: itemOmnisend(addedId, addedQty)
+        }
+      }]);
+    } catch (e) {}
+  }
+
   /* ---- Acciones ---------------------------------------------------------- */
   function add(id, q, origen) {
     if (!PRODUCTS[id] || soldOut(id)) return;
@@ -86,24 +138,27 @@
   }
   /* Combo de la página de producto: varios sabores de una vez y un solo evento. */
   function addCombo(sabores, origen) {
-    var total = 0, detalle = [];
+    var total = 0, detalle = [], antes = {};
     ORDER.forEach(function (id) {
       var q = sabores[id] || 0;
       if (!q || !PRODUCTS[id] || soldOut(id)) return;
+      antes[id] = qtyOf(id);
       state[id] = Math.min(qtyOf(id) + q, maxFor(id));
       total += q;
       detalle.push(id + '×' + q);
     });
     if (!total) return;
     save(); render();
+    Object.keys(antes).forEach(function (id) { enviarCarritoOmnisend(id, qtyOf(id) - antes[id]); });
     track('agregar_carrito', { cantidad: total, detalle: (origen || 'pagina') + ' combo ' + detalle.join(' ') });
     open(); pulse();
   }
   function setQty(id, q) {
-    var max = maxFor(id);
+    var max = maxFor(id), antes = qtyOf(id);
     if (q > max) q = max;                                  // nunca por encima del stock real
     if (q <= 0) { delete state[id]; } else { state[id] = q; }
     save(); render();
+    enviarCarritoOmnisend(id, qtyOf(id) - antes);          // add() y el + del carrito pasan por acá
   }
   function remove(id) { delete state[id]; save(); render(); }
 
