@@ -546,7 +546,8 @@
 
   /* ---- Estilos ----------------------------------------------------------- */
   var CSS = [
-    '.pr-cart-overlay{position:fixed;inset:0;background:rgba(4,6,4,.66);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .35s ease,visibility .35s;z-index:2000;}',
+    'html{scrollbar-gutter:stable;}',
+    '.pr-cart-overlay{position:fixed;inset:0;background:rgba(4,6,4,.72);opacity:0;visibility:hidden;transition:opacity .35s ease,visibility .35s;z-index:2000;}',
     '.pr-cart-overlay.open{opacity:1;visibility:visible;}',
     '.pr-cart{position:fixed;top:0;right:0;height:100%;width:418px;max-width:92vw;display:flex;flex-direction:column;background:var(--bg,#080A08);border-left:1px solid var(--border,rgba(0,212,122,.16));transform:translateX(102%);transition:transform .42s cubic-bezier(.23,1,.32,1);z-index:2001;box-shadow:-34px 0 70px -22px rgba(0,0,0,.78);font-family:var(--bd,"Bricolage Grotesque",system-ui,sans-serif);color:var(--white,#EEF5EE);}',
     '.pr-cart.open{transform:none;}',
