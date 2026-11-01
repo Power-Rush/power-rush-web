@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const PAGINAS = ['index.html', 'products/powerrush/index.html'];
+const PAGINAS = ['index.html', 'products/powerrush/index.html', 'centro-de-ayuda.html'];
 const VIEJOS = ['$24.999', '$22.500', '$21.250', '$44.999', '$63.749', '$800<', 'data-pr-price', 'data-total='];
 
 for (const ruta of PAGINAS) {

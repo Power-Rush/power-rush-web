@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/ab.js"></script>
+  <title>Centro de ayuda — Power Rush</title>
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="description" content="Pedidos, envíos, garantía y todo sobre Power Rush. Buscá tu duda o escribinos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,700;1,900&family=Bricolage+Grotesque:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:      #080A08;
+  --bg2:     #0C100C;
+  --bg3:     #111511;
+  --green:   #00D47A;
+  --yellow:  #FFD100;
+  --white:   #EEF5EE;
+  --gray:    #56685A;
+  --soft:    rgba(238,245,238,.8);
+  --border:  rgba(0,212,122,0.16);
+  --hd: 'Barlow Condensed', sans-serif;
+  --bd: 'Bricolage Grotesque', sans-serif;
+  --mo: 'Space Mono', monospace;
+  --annh: 38px;
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--annh) + 90px); }
+body { background: var(--bg); color: var(--white); font-family: var(--bd); font-size: 16px; line-height: 1.6; overflow-x: hidden; cursor: none; }
+a, button, summary, input { cursor: none; }
+
+/* ===== CURSOR ===== */
+#cur { position: fixed; width: 14px; height: 14px; border-radius: 50%; background: var(--green); pointer-events: none; z-index: 10000; transform: translate(-50%,-50%); transition: width .18s, height .18s, opacity .18s; mix-blend-mode: screen; }
+#cur-glo { position: fixed; width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle, rgba(0,212,122,.2) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); }
+
+/* ===== PROGRESS ===== */
+#progress { position: fixed; top: 0; left: 0; height: 3px; width: 0%; z-index: 10001; background: linear-gradient(90deg, var(--green), var(--yellow)); box-shadow: 0 0 8px var(--green); transition: width .06s linear; }
+
+/* ===== ANNOUNCE ===== */
+#announce { position: fixed; top: 0; left: 0; right: 0; z-index: 1002; height: var(--annh); background: var(--green); overflow: hidden; }
+.ann-rot { position: relative; width: 100%; height: 100%; }
+.ann-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 0 14px; opacity: 0; font-family: var(--mo); font-weight: 400; font-size: 11.5px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; color: #04170D; animation: annRot 15s infinite; }
+.ann-msg:nth-child(2) { animation-delay: 5s; }
+.ann-msg:nth-child(3) { animation-delay: 10s; }
+.ann-msg b { font-weight: 700; }
+.ann-msg svg { width: 14px; height: 14px; flex: none; opacity: .85; }
+@keyframes annRot {
+  0%    { opacity: 0; transform: translateY(7px); }
+  2.5%  { opacity: 1; transform: translateY(0); }
+  30%   { opacity: 1; transform: translateY(0); }
+  33%   { opacity: 0; transform: translateY(-7px); }
+  100%  { opacity: 0; transform: translateY(-7px); }
+}
+
+/* ===== NAV ===== */
+nav { position: fixed; top: var(--annh); left: 0; right: 0; background: rgba(8,10,8,.88); backdrop-filter: blur(24px) saturate(1.4); border-bottom: 1px solid var(--border); padding: 12px 0; z-index: 1000; }
+.nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.nav-logo img { height: 30px; width: auto; display: block; }
+.nav-links { display: flex; gap: 40px; list-style: none; }
+.nav-links a { position: relative; color: rgba(238,245,238,.72); text-decoration: none; font-size: 14.5px; font-weight: 500; letter-spacing: .2px; transition: color .2s; }
+.nav-links a::after { content: ''; position: absolute; left: 0; right: 0; bottom: -7px; height: 1px; background: var(--green); transform: scaleX(0); transition: transform .22s ease; }
+.nav-links a:hover, .nav-links a[aria-current] { color: var(--white); }
+.nav-links a:hover::after, .nav-links a[aria-current]::after { transform: scaleX(1); }
+.nav-actions { display: flex; align-items: center; gap: 12px; }
+.nav-btn { display: inline-flex; align-items: center; text-decoration: none; white-space: nowrap; background: var(--green); color: var(--bg); border: none; border-radius: 8px; padding: 11px 22px; font-family: var(--hd); font-weight: 900; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; transition: background .16s, box-shadow .16s, transform .1s; }
+.nav-btn:hover { background: #06EA8A; box-shadow: 0 0 0 3px rgba(0,212,122,.2); }
+
+
+/* ===== CENTRO DE AYUDA ===== */
+.hc { max-width: 1120px; margin: 0 auto; padding: calc(var(--annh) + 118px) 24px 88px; }
+.hc-top h1 { font-family: var(--hd); font-weight: 900; font-style: italic; font-size: clamp(58px, 11vw, 132px); line-height: .9; letter-spacing: -1px; text-transform: uppercase; margin-bottom: 30px; }
+.hc-buscar { position: relative; display: block; }
+.hc-buscar svg { position: absolute; left: 0; top: 50%; width: 26px; height: 26px; transform: translateY(-50%); color: var(--green); pointer-events: none; }
+.hc-buscar input { width: 100%; padding: 16px 0 16px 42px; background: none; border: none; border-bottom: 2px solid var(--green); border-radius: 0; outline: none; color: var(--white); font-family: var(--bd); font-size: clamp(19px, 2.4vw, 26px); font-weight: 500; }
+.hc-buscar input::placeholder { color: rgba(238,245,238,.45); }
+.hc-buscar input:focus { box-shadow: 0 2px 0 0 var(--green); }
+.hc-buscar input::-webkit-search-cancel-button { display: none; }
+
+/* Accesos: una sola barra partida en cuatro */
+.hc-accesos { display: grid; grid-template-columns: repeat(4, 1fr); margin: 34px 0 64px; background: var(--bg2); border: 1px solid var(--border); }
+.hc-acceso { display: flex; align-items: center; gap: 12px; padding: 20px 18px; background: none; border: none; border-left: 1px solid var(--border); color: var(--white); text-align: left; text-decoration: none; font-family: var(--hd); font-weight: 700; font-size: 20px; line-height: 1.1; transition: background .15s, color .15s; }
+.hc-acceso:first-child { border-left: none; }
+.hc-acceso svg { flex: none; width: 24px; height: 24px; color: var(--green); transition: color .15s; }
+.hc-acceso:hover { background: var(--green); color: var(--bg); }
+.hc-acceso:hover svg { color: var(--bg); }
+
+/* Menú de categorías + preguntas */
+.hc-cuerpo { display: grid; grid-template-columns: 290px 1fr; gap: 56px; align-items: start; }
+.hc-menu { position: sticky; top: calc(var(--annh) + 88px); display: flex; flex-direction: column; gap: 4px; }
+.hc-tab { display: block; width: 100%; padding: 11px 18px; background: none; border: none; color: rgba(238,245,238,.72); text-align: left; font-family: var(--hd); font-weight: 700; font-size: 25px; line-height: 1.1; text-transform: uppercase; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); transition: color .15s, background .15s; }
+.hc-tab:hover { color: var(--white); background: var(--bg3); }
+.hc-tab[aria-selected="true"] { background: var(--green); color: var(--bg); font-style: italic; }
+.hc-tab:focus-visible, .hc-acceso:focus-visible, .item summary:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+.panel { min-width: 0; }
+.panel h2 { font-family: var(--hd); font-weight: 900; font-style: italic; font-size: 38px; line-height: 1; text-transform: uppercase; margin-bottom: 8px; }
+.item { border-bottom: 1px solid var(--border); }
+.item summary { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 18px 0; list-style: none; font-weight: 600; font-size: 18px; line-height: 1.3; transition: color .15s; }
+.item summary::-webkit-details-marker { display: none; }
+.item summary::after { content: '+'; flex: none; color: var(--green); font-family: var(--hd); font-weight: 700; font-size: 28px; line-height: 1; transition: transform .18s; }
+.item[open] summary { color: var(--green); }
+.item[open] summary::after { transform: rotate(45deg); }
+.item summary:hover { color: var(--green); }
+.resp { max-width: 66ch; padding-bottom: 12px; }
+.resp p { color: var(--soft); font-size: 15.5px; margin-bottom: 12px; }
+.resp strong { color: var(--white); }
+.resp a { color: var(--green); }
+.hc-vacio { color: var(--soft); font-size: 17px; }
+.hc-vacio a { color: var(--green); }
+.buscando .hc-menu { opacity: .35; }
+.buscando .panel h2 { font-size: 24px; margin-top: 30px; }
+.buscando .panel:first-of-type h2 { margin-top: 0; }
+
+/* Contacto */
+.hc-contacto { background: var(--green); color: var(--bg); scroll-margin-top: calc(var(--annh) + 70px); }
+.hc-contacto-in { max-width: 1120px; margin: 0 auto; padding: 56px 24px; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+.hc-contacto h2 { font-family: var(--hd); font-weight: 900; font-style: italic; font-size: clamp(38px, 6vw, 62px); line-height: .95; text-transform: uppercase; }
+.hc-canales { display: flex; flex-wrap: wrap; gap: 10px; }
+.hc-canal { display: inline-flex; align-items: center; padding: 15px 26px; background: var(--bg); color: var(--white); text-decoration: none; font-family: var(--hd); font-weight: 900; font-size: 18px; letter-spacing: .6px; text-transform: uppercase; transition: color .15s; }
+.hc-canal:hover { color: var(--green); }
+.hc-canal span { margin-left: 10px; color: var(--green); font-family: var(--bd); font-weight: 600; font-size: 15px; letter-spacing: 0; text-transform: none; }
+
+/* ===== FOOTER ===== */
+footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 44px 24px; }
+.foot-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px; }
+.foot-logo img { height: 26px; }
+.foot-copy { font-family: var(--mo); font-size: 11.5px; color: var(--gray); letter-spacing: 1px; line-height: 1.8; text-align: center; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.foot-links a { font-size: 12px; color: var(--gray); text-decoration: none; transition: color .2s; }
+.foot-links a:hover { color: var(--white); }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .ann-msg { animation-name: annRotFade; }
+  @keyframes annRotFade { 0% { opacity: 0; } 2.5% { opacity: 1; } 30% { opacity: 1; } 33% { opacity: 0; } 100% { opacity: 0; } }
+  html { scroll-behavior: auto; }
+}
+
+@media (max-width: 900px) {
+  .hc-accesos { grid-template-columns: repeat(2, 1fr); }
+  .hc-acceso:nth-child(odd) { border-left: none; }
+  .hc-acceso:nth-child(n+3) { border-top: 1px solid var(--border); }
+  .hc-cuerpo { grid-template-columns: 1fr; gap: 30px; }
+  .hc-menu { position: static; flex-direction: row; gap: 6px; margin: 0 -24px; padding: 0 24px; overflow-x: auto; scrollbar-width: none; }
+  .hc-menu::-webkit-scrollbar { display: none; }
+  .hc-tab { width: auto; flex: none; font-size: 20px; white-space: nowrap; }
+}
+
+@media (max-width: 768px) {
+  #cur, #cur-glo { display: none; }
+  .ann-msg { font-size: 10px; letter-spacing: .4px; gap: 7px; padding: 0 10px; }
+  .ann-msg svg { width: 12px; height: 12px; }
+  nav { padding: 10px 0; }
+  .nav-inner { padding: 0 16px; }
+  .nav-links { display: none; }
+  .nav-btn { padding: 10px 14px; font-size: 13.5px; letter-spacing: .8px; }
+  .nav-actions { gap: 8px; }
+  .hc { padding: calc(var(--annh) + 92px) 16px 64px; }
+  .hc-menu { margin: 0 -16px; padding: 0 16px; }
+  .hc-acceso { padding: 16px 13px; font-size: 18px; gap: 9px; }
+  .hc-contacto-in { padding: 44px 16px; }
+  .foot-inner { flex-direction: column; text-align: center; }
+  .foot-links { justify-content: center; }
+}
+  </style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-glo"></div>
+<div id="progress"></div>
+
+<div id="announce" aria-label="Beneficios">
+  <div class="ann-rot">
+    <p class="ann-msg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      <span><b>Envío gratis</b> llevando 2 o más unidades</span>
+    </p>
+    <p class="ann-msg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      <span><b>30 días de garantía</b> o devolvemos tu dinero</span>
+    </p>
+    <p class="ann-msg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <span><b>7 nootropicos + vitaminas</b> con dosis reales, sin crash</span>
+    </p>
+  </div>
+</div>
+
+<nav>
+  <div class="nav-inner">
+  <a href="/" class="nav-logo">
+    <img src="/assets/logo.png" alt="Power Rush">
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/#reviews">Reseñas</a></li>
+    <li><a href="/centro-de-ayuda" aria-current="page">Ayuda</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="pr-cart-btn" aria-label="Abrir carrito" data-pr-open>
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+      <span class="pr-cart-count" data-pr-count hidden>0</span>
+    </button>
+    <a href="/products/powerrush" class="nav-btn">PROBALO AHORA</a>
+  </div>
+  </div>
+</nav>
+
+<main>
+<div class="hc">
+  <div class="hc-top">
+    <h1>Centro de ayuda</h1>
+    <label class="hc-buscar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="hc-q" type="search" placeholder="¿En qué te ayudamos?" aria-label="Buscar en el centro de ayuda" autocomplete="off">
+    </label>
+  </div>
+
+  <div class="hc-accesos">
+    <button class="hc-acceso" type="button" data-abrir="q-seguir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Seguir mi pedido</button>
+    <button class="hc-acceso" type="button" data-abrir="q-problema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Reportar un problema</button>
+    <button class="hc-acceso" type="button" data-abrir="q-garantia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>Pedir la garantía</button>
+    <a class="hc-acceso" href="#contacto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Hablar con nosotros</a>
+  </div>
+
+  <div class="hc-cuerpo" id="hc-cuerpo">
+    <div class="hc-menu" role="tablist" aria-label="Categorías" aria-orientation="vertical">
+      <button class="hc-tab" id="t-producto" role="tab" type="button" aria-controls="p-producto" aria-selected="true">El producto</button>
+      <button class="hc-tab" id="t-pedidos" role="tab" type="button" aria-controls="p-pedidos" aria-selected="false" tabindex="-1">Pedidos y envíos</button>
+      <button class="hc-tab" id="t-garantia" role="tab" type="button" aria-controls="p-garantia" aria-selected="false" tabindex="-1">Garantía</button>
+    </div>
+    <div>
+    <section class="panel" id="p-producto" role="tabpanel" aria-labelledby="t-producto">
+      <h2>El producto</h2>
+      <details class="item">
+        <summary>¿Qué es Power Rush?</summary>
+        <div class="resp"><p>Power Rush es un suplemento cognitivo en polvo pensado para potenciar tu foco y tu energía sin el bajón. Combina 7 nootropicos + vitaminas en dosis reales —cafeína, L-Teanina, L-Tirosina, Colina y más— para darte concentración sostenida, reacción rápida y claridad mental durante horas. Sin azúcar, sin mezclas misteriosas y con cada ingrediente declarado en la etiqueta. Lo mezclás con agua, lo tomás 20–30 minutos antes y listo: a rendir.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Cuándo empiezo a sentirlo?</summary>
+        <div class="resp"><p>Entre <strong>20 y 40 minutos</strong> después de tomarlo. Con el estómago no demasiado lleno el efecto es más claro. La primera vez puede ser más sutil — el cuerpo necesita un par de usos para responder a pleno.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Tiene mucha cafeína?</summary>
+        <div class="resp"><p><strong>140mg por porción</strong> — equivalente a un café largo. No llega a los niveles que te dejan acelerado o con temblores. Y combinada con L-Teanina (140mg), el efecto es más limpio y sostenido que la cafeína sola.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Me va a arruinar el sueño?</summary>
+        <div class="resp"><p>Si lo tomás <strong>6+ horas antes de dormir</strong>, no debería ser problema para la mayoría. La cafeína tiene vida media de 4-6 horas. Si sos sensible o lo tomás de noche, puede afectar el sueño — como cualquier fuente de cafeína.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Tiene azúcar?</summary>
+        <div class="resp"><p>Cero azúcar. 6 calorías por porción. Está endulzado con sucralosa, sin impacto en el nivel de glucosa en sangre.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Lo puedo tomar si no juego videojuegos?</summary>
+        <div class="resp"><p>Por supuesto. La fórmula es para cualquier tarea que requiera foco sostenido: estudiar, trabajar, crear contenido, diseñar, programar y hasta entrenar. Power Rush no discrimina… a menos que seas team verano, ahí sí que está todo mal.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Cuánto dura el pote?</summary>
+        <div class="resp"><p><strong>30 porciones de 10g</strong> — 300g netos. Si lo usás todos los días dura un mes. Si es más situacional (sesiones, parciales, streams), puede durar bastante más.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Cuál sabor elijo?</summary>
+        <div class="resp"><p>La fórmula es <strong>exactamente la misma en todos los sabores</strong>. <strong>Blue Fizz</strong> es ácido intenso: el más fuerte de la línea, para los que les gustan los sabores que se sienten. <strong>Cherry Pop</strong> es cereza refrescante y suave: más rico y fácil de tomar. La ciencia adentro es idéntica, elegí por gusto.</p></div>
+      </details>
+    </section>
+    <section class="panel" id="p-pedidos" role="tabpanel" aria-labelledby="t-pedidos" hidden>
+      <h2>Pedidos y envíos</h2>
+      <details class="item" id="q-seguir">
+        <summary>¿Cómo sigo mi pedido?</summary>
+        <div class="resp"><p>Te enviamos el tracking en cuanto despachamos. Si no te llegó, <a href="mailto:soporte@powerrush.com.ar?subject=Ayuda%20con%20mi%20pedido&body=Numero%20de%20pedido%3A%0AQue%20paso%3A%0A">escribinos</a> con tu número de pedido.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Cuánto tarda en llegar?</summary>
+        <div class="resp"><p>Enviamos a todo el país. A CABA y AMBA llega en 24 hs hábiles; al resto del país los tiempos varían según la zona. Te enviamos el tracking en cuanto despachamos.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Cuánto sale el envío?</summary>
+        <div class="resp"><p>Es gratis llevando 2 potes o más. Con 1 pote, el costo se calcula en el checkout.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Hay descuento por llevar más?</summary>
+        <div class="resp"><p>Con 2 potes tenés <strong>envío gratis</strong>. Con 3 o más sumás <strong>10% off</strong>.</p></div>
+      </details>
+      <details class="item" id="q-problema">
+        <summary>Mi pedido llegó mal</summary>
+        <div class="resp"><p>Si llegó roto, incompleto o no es lo que pediste, <a href="mailto:soporte@powerrush.com.ar?subject=Ayuda%20con%20mi%20pedido&body=Numero%20de%20pedido%3A%0AQue%20paso%3A%0A">escribinos</a> con tu número de pedido y una foto de lo que recibiste. Lo resolvemos.</p></div>
+      </details>
+      <details class="item">
+        <summary>¿Qué es el video del founder para quienes compran 3 potes?</summary>
+        <div class="resp"><p>Cuando comprás 3 potes o más, el founder de Power Rush te manda un video agradeciéndote la compra personalmente… No seas sucio que no es nada raro, ya te conozco a vos.</p></div>
+      </details>
+    </section>
+    <section class="panel" id="p-garantia" role="tabpanel" aria-labelledby="t-garantia" hidden>
+      <h2>Garantía</h2>
+      <details class="item">
+        <summary>¿Qué pasa si no me gusta?</summary>
+        <div class="resp"><p>Garantía de 30 días. Si en los primeros 30 días <strong>no notás ningún efecto ni diferencia</strong>, te devolvemos el dinero, sin vueltas. Aclaración: la devolución es por resultados, <strong>no por sabor</strong> — el gusto es demasiado subjetivo para garantizarlo, por eso tenés dos sabores bien distintos para elegir el que va con vos.</p></div>
+      </details>
+      <details class="item" id="q-garantia">
+        <summary>¿Cómo pido la garantía?</summary>
+        <div class="resp"><p>Si en los primeros 30 días no notás ningún efecto ni diferencia, <a href="mailto:soporte@powerrush.com.ar?subject=Ayuda%20con%20mi%20pedido&body=Numero%20de%20pedido%3A%0AQue%20paso%3A%0A">escribinos</a> con tu número de pedido y te decimos cómo seguir.</p></div>
+      </details>
+    </section>
+      <p class="hc-vacio" id="hc-vacio" hidden>No encontramos nada con esa búsqueda. Probá con otra palabra o <a href="#contacto">hablá con nosotros</a>.</p>
+    </div>
+  </div>
+</div>
+
+<section class="hc-contacto" id="contacto">
+  <div class="hc-contacto-in">
+    <h2>¿No lo encontraste? Escribinos.</h2>
+    <div class="hc-canales">
+      <a class="hc-canal" href="mailto:soporte@powerrush.com.ar">Mail<span>soporte@powerrush.com.ar</span></a>
+      <a class="hc-canal" href="https://wa.me/5491156039096" target="_blank" rel="noopener">WhatsApp<span>11 5603-9096</span></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <div class="foot-logo"><img src="/assets/logo.png" alt="Power Rush"></div>
+    <p class="foot-copy">&copy; 2026 Power Rush — Argentina<br>Suplemento cognitivo dietético. No apto para menores de 18 años.</p>
+    <div class="foot-links">
+      <a href="#">Instagram</a><a href="#">TikTok</a><a href="/centro-de-ayuda">Centro de ayuda</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/cart.js" defer></script>
+<script>
+const cur = document.getElementById('cur'), curGlo = document.getElementById('cur-glo');
+let mx = 0, my = 0, gx = 0, gy = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+});
+(function aG() { gx += (mx-gx)*.11; gy += (my-gy)*.11; curGlo.style.left = gx+'px'; curGlo.style.top = gy+'px'; requestAnimationFrame(aG); })();
+document.querySelectorAll('a, button, summary').forEach(el => {
+  el.addEventListener('mouseenter', () => { cur.style.width='26px'; cur.style.height='26px'; cur.style.opacity='.6'; });
+  el.addEventListener('mouseleave', () => { cur.style.width='14px'; cur.style.height='14px'; cur.style.opacity='1'; });
+});
+
+const prog = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const s = document.documentElement;
+  prog.style.width = ((s.scrollTop/(s.scrollHeight-s.clientHeight))*100)+'%';
+}, { passive: true });
+/* ===== CENTRO DE AYUDA ===== */
+const hc = document.getElementById('hc-cuerpo');
+const tabs = [...document.querySelectorAll('.hc-tab')];
+const paneles = [...document.querySelectorAll('.panel')];
+const items = [...document.querySelectorAll('.item')];
+const vacio = document.getElementById('hc-vacio');
+const input = document.getElementById('hc-q');
+const sinAcentos = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+items.forEach(el => { el.dataset.txt = sinAcentos(el.textContent); });
+
+function elegir(id) {
+  tabs.forEach(t => {
+    const sel = t.id === 't-' + id;
+    t.setAttribute('aria-selected', sel);
+    t.tabIndex = sel ? 0 : -1;
+    if (sel) t.parentElement.scrollLeft = t.offsetLeft - t.parentElement.offsetLeft - 16;
+  });
+  paneles.forEach(p => { p.hidden = p.id !== 'p-' + id; });
+}
+function limpiarBusqueda() {
+  input.value = '';
+  hc.classList.remove('buscando');
+  items.forEach(el => { el.hidden = false; });
+  vacio.hidden = true;
+}
+function abrir(el) {
+  limpiarBusqueda();
+  elegir(el.closest('.panel').id.slice(2));
+  el.open = true;
+  el.scrollIntoView({ block: 'center' });
+}
+function buscar() {
+  const palabras = sinAcentos(input.value).trim().split(/\s+/).filter(Boolean);
+  if (!palabras.length) {
+    const actual = tabs.find(t => t.getAttribute('aria-selected') === 'true');
+    limpiarBusqueda();
+    elegir(actual.id.slice(2));
+    return;
+  }
+  hc.classList.add('buscando');
+  let hay = 0;
+  items.forEach(el => {
+    const ok = palabras.every(p => el.dataset.txt.includes(p));
+    el.hidden = !ok;
+    if (ok) hay++;
+  });
+  paneles.forEach(p => { p.hidden = !p.querySelector('.item:not([hidden])'); });
+  vacio.hidden = hay > 0;
+}
+
+input.addEventListener('input', buscar);
+tabs.forEach((t, i) => {
+  t.addEventListener('click', () => { limpiarBusqueda(); elegir(t.id.slice(2)); });
+  t.addEventListener('keydown', e => {
+    const paso = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+    if (!paso) return;
+    e.preventDefault();
+    const sig = tabs[(i + paso + tabs.length) % tabs.length];
+    sig.click();
+    sig.focus();
+  });
+});
+document.querySelectorAll('[data-abrir]').forEach(b => {
+  b.addEventListener('click', () => abrir(document.getElementById(b.dataset.abrir)));
+});
+</script>
+<script type="text/javascript">
+  window.omnisend = window.omnisend || [];
+  omnisend.push(["brandID", "6ac395de2df7ffe1c84c64b2"]);
+  omnisend.push(["track", "$pageViewed"]);
+  !function(){var e=document.createElement("script");e.type="text/javascript",e.async=!0,e.src="https://omnisnippet1.com/inshop/launcher-v2.js";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}();
+</script>
+</body>
+</html>
